@@ -1,0 +1,121 @@
+@using CinemaStock.Client.Extensions
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Client.Services.Clients.Base
+@using CinemaStock.Shared
+@using CinemaStock.Shared.ApiEndpointControllers
+@using CinemaStock.Shared.DTOs.Enums
+@using CinemaStock.Shared.DTOs.Responses
+@inject HttpClient Http
+@inject CinemaContentClient CinemaContentClient
+@inject ILogger<AdminSystemDashboard> Logger
+
+<div class="cms-container">
+    <div class="cms-top-bar">
+        <div class="cms-title-zone">
+            <h3>@MainStrings["CatalogManagement"]</h3>
+            <span class="cms-count-badge">@MainStrings["HomeReleasesCount"] @_mediaList.Count</span>
+        </div>
+        <button class="cms-btn-primary" @onclick="OpenCreateDrawer">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 5v14M5 12h14" />
+            </svg>
+            @MainStrings["AddMedia"]
+        </button>
+    </div>
+
+    <div class="cms-table-wrapper">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">@MainStrings["ID"]</th>
+                    <th style="width: 70px;">@MainStrings["Poster"]</th>
+                    <th>@MainStrings["Title"]</th>
+                    <th style="width: 120px;">@MainStrings["Type"]</th>
+                    <th style="width: 100px;">@MainStrings["Rating"]</th>
+                    <th style="width: 80px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _mediaList)
+                {
+                    <tr>
+                        <td>
+                            <div class="table-guid-cell">
+                                <span>@item.Id</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="table-poster-mini">
+                                <img src="@ImageExtensions.GetPosterUrl(item.Picture)" alt="@MainStrings["Poster"]" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="table-title-cell">
+                                <span class="main-title">@GetMediaTitle(item)</span>
+                                @if (!string.IsNullOrEmpty(item.LocalTitle))
+                                {
+                                    <span class="sub-title">@item.OriginalTitle</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <span class="type-pill @item.Type.ToLower()">@item.Type</span>
+                        </td>
+                        <td>
+                            <span class="rating-value @(item.Rating >= 7 ? "high" : "low")">★
+                                @item.Rating.ToString("F1")</span>
+                        </td>
+                        <td>
+                            <button class="table-action-btn" @onclick="() => OpenEditDrawer(item)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                </svg>
+                            </button>
+                            <button class="table-action-btn delete-btn" @onclick="() => OpenDeleteDrawer(item.Id)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCreateClick { get; set; }
+    [Parameter] public EventCallback<CinemaContentResponse> OnEditClick { get; set; }
+    [Parameter] public EventCallback<Guid> OnDeleteClick { get; set; }
+
+    private List<CinemaContentResponse> _mediaList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMediaData();
+    }
+
+    public async Task RefreshData()
+    {
+        await LoadMediaData();
+    }
+
+    private async Task LoadMediaData()
+    {
+        var data = await CinemaContentClient.GetCinemaContentsListAsync(filter: null);
+        _mediaList = data ?? new();
+    }
+
+    private async Task OpenCreateDrawer() => await OnCreateClick.InvokeAsync();
+    private async Task OpenEditDrawer(CinemaContentResponse item) => await OnEditClick.InvokeAsync(item);
+    private async Task OpenDeleteDrawer(Guid id) => await OnDeleteClick.InvokeAsync(id);
+
+    private string GetMediaTitle(CinemaContentResponse item) => item.LocalTitle ?? item.OriginalTitle;
+}

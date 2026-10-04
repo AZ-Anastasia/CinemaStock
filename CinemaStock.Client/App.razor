@@ -1,0 +1,54 @@
+﻿@using CinemaStock.Client.Layout
+@using CinemaStock.Client.Pages.Components
+@using CinemaStock.Shared.Routes
+@using CinemaStock.Client.Pages
+@inject NavigationManager Navigation
+
+<ErrorBoundary @ref="errorBoundary">
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <Router AppAssembly="@typeof(App).Assembly" @rendermode="RenderMode.InteractiveWebAssembly">
+                <Found Context="routeData">
+                    <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                        <NotAuthorized>
+                            @{
+                                RedirectToLogin();
+                            }
+                        </NotAuthorized>
+                        <Authorizing>
+                            <EmptyState Title="@MainStrings["CheckingRoles"]"
+                                Description="@MainStrings["CheckingRolesDescription"]" />
+                        </Authorizing>
+                    </AuthorizeRouteView>
+                    <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                </Found>
+                <NotFound>
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <PageTitle>@MainStrings["NotFound"]</PageTitle>
+                        <EmptyState Title="@MainStrings["NotFound"]" Description="@MainStrings["WrongAddress"]" />
+                    </LayoutView>
+                </NotFound>
+            </Router>
+        </CascadingAuthenticationState>
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <div class="global-error-panel">
+            <h2>@MainStrings["UnhandledError"]</h2>
+            <button class="btn-refresh" onclick="window.location.reload()">@MainStrings["Reload"]</button>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? errorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
+    }
+
+    private void RedirectToLogin()
+    {
+        Navigation.NavigateTo(ApiRoutes.Account.LoginEndpoint);
+    }
+}

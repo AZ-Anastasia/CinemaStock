@@ -1,0 +1,34 @@
+@using CinemaStock.Client.Extensions
+@using CinemaStock.Shared
+@using CinemaStock.Shared.DTOs.Responses
+
+<div class="media-card-standard">
+    <div class="poster-container">
+        <img class="poster-main" src="@ImageExtensions.GetPosterUrl(Media?.Picture)" alt="@(Media?.LocalTitle ?? Media?.OriginalTitle)" />
+        <div class="rating-badge">@Media?.Rating.ToString("F1")</div>
+
+        <div class="movie-hover-card">
+            <div class="hover-rating">@Media?.Rating.ToString("F1")</div>
+            <h5 class="hover-title">@(Media?.LocalTitle ?? Media?.OriginalTitle)</h5>
+            <div class="hover-divider"></div>
+
+            <p class="hover-description">@(Media?.Description ?? string.Empty)</p>
+            <div class="hover-divider"></div>
+
+            <div class="hover-meta-tags">
+                <span class="tag-year">@(Media?.ReleaseDate?.Year.ToString() ?? "—")</span>
+                <span class="tag-type">@(Media?.Type?.ToString() ?? MainStrings["Media"])</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-text-block">
+        <h4 class="grid-card-title">@(Media?.LocalTitle ?? Media?.OriginalTitle)</h4>
+        <p class="grid-card-meta">
+            @(Media?.ReleaseDate?.Year.ToString() ?? "—"), @(Media?.Type?.ToString() ?? MainStrings["Media"])
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CinemaContentResponse? Media { get; set; }
+}

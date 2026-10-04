@@ -1,0 +1,27 @@
+<div class="empty-catalog-state">
+    <div class="empty-icon-glow">
+        <!-- SVG: Нуарная режиссерская хлопушка (Символ начала съемок) -->
+        <svg class="empty-svg" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org">
+            <path d="M3 7L6 3H9L6 7H3Z" fill="var(--accent-red)" opacity="0.8" />
+            <path d="M9 7L12 3H15L12 7H9Z" fill="currentColor" opacity="0.3" />
+            <path d="M15 7L18 3H21L18 7H15Z" fill="var(--accent-red)" opacity="0.8" />
+            <path d="M2 7H22V21C22 21.5523 21.5523 22 21 22H3C2.44772 22 2 21.5523 2 21V7Z" stroke="currentColor"
+                stroke-width="2" stroke-linejoin="round" />
+            <path d="M2 7L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M7 12H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+            <path d="M7 16H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+        </svg>
+    </div>
+    <h3 class="empty-title">@Title</h3>
+    <p class="empty-description">@Description</p>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Title { get; set; } = string.Empty;
+    
+    [Parameter]
+    [EditorRequired]
+    public string Description { get; set; } = string.Empty;
+}

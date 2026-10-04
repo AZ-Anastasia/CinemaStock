@@ -1,0 +1,119 @@
+﻿@page "/"
+@namespace CinemaStock.Client.Pages
+@using CinemaStock.Client.Pages.Components
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared
+@using CinemaStock.Shared.DTOs.Enums
+@using CinemaStock.Shared.DTOs.Responses
+@using Microsoft.Extensions.Logging
+
+@inject CinemaContentClient CinemaContentClient
+@inject HttpClient HttpClient
+@inject ILogger<Home> Logger
+
+<PageTitle>@MainStrings["HomeTitle"]</PageTitle>
+
+<section class="hero-promo-section">
+    @if (_isLoading)
+    {
+        <div class="hero-skeleton">
+            <div class="skeleton-content-block">
+                <div class="skeleton-description-lines">
+                    <div class="skeleton-text-line full"></div>
+                    <div class="skeleton-text-line partial"></div>
+                </div>
+                <div class="skeleton-actions-block">
+                    <div class="skeleton-btn"></div>
+                    <div class="skeleton-btn"></div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="hero-backdrop">
+            <div class="gradient-mask-horizontal"></div>
+            <div class="gradient-mask-vertical"></div>
+
+            <div class="hero-content-alignment">
+                <div class="hero-content-wrapper">
+                </div>
+            </div>
+        </div>
+    }
+</section>
+
+<div class="home-wrapper">
+    @if (!_isLoading && _mediaContents != null && _mediaContents.Any())
+    {
+        <span class="catalog-count">@MainStrings["HomeReleasesCount"] @_mediaContents.Count</span>
+    }
+    <main class="content-section">
+
+        @if (_isLoading)
+        {
+            <div class="media-grid">
+            </div>
+        }
+        else if (_mediaContents == null || !_mediaContents!.Any())
+        {
+            <EmptyState Title="@MainStrings["HomeNoContentTitle"]" Description="@MainStrings["HomeNoContentDescription"]" />
+        }
+        else
+        {
+            <div class="media-grid">
+                @foreach (var item in _mediaContents!)
+                {
+                    <MediaCard Media="@item" />
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private List<CinemaContentResponse>? _mediaContents;
+    private bool _isLoading = true;
+    private ReleaseType? ActiveType { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchDataAsync();
+    }
+
+    private async Task ChangeFilterAsync(ReleaseType? type)
+    {
+        if (ActiveType == type) return;
+        ActiveType = type;
+        await FetchDataAsync();
+    }
+
+    private async Task FetchDataAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            string? filter = ActiveType.HasValue ? ActiveType.Value.ToString() : null;
+            _mediaContents = await CinemaContentClient.GetCinemaContentsListAsync(filter);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Не удалось получить медиа-контент для типа: {ReleaseType}", ActiveType);
+            _mediaContents = new List<CinemaContentResponse>();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadContent(ReleaseType? targetType = null)
+    {
+        _mediaContents = null; // Включаем состояние загрузки
+
+        var filter = targetType.HasValue ? targetType.Value.ToString() : null;
+        _mediaContents = await CinemaContentClient.GetCinemaContentsListAsync(filter);
+    }
+}

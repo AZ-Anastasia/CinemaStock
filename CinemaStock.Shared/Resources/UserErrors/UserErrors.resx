@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://w3.org" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="CouldNotLoadData"><value>Could not load data</value></data>
+  <data name="DeletionFailed"><value>Deletion failed</value></data>
+  <data name="ServerConnectionFailed"><value>Server connection fail</value></data>
+
+  <data name="SizeInMB"><value>MB</value></data>
+  <data name="BadFileFormat"><value>The format of the file is not supported. Allowed</value></data>
+  <data name="TooLargeFileSize"><value>File is too large. Maximum</value></data>
+  <data name="ErrorFileFormat"><value>File format is corruptedor contains malicious code (image signature mismatch).</value></data>
+
+  <data name="BadLoginOrPassword"><value>Wrong login or password.</value></data>
+  <data name="AccountBlocked"><value>Account is blocked due to many invalid login attempts.</value></data>
+  <data name="LoginIsNotAllowed"><value>Login is not allowed. Perhaps, you need an Email confirmation in DB (EmailConfirmed = true).</value></data>
+  <data name="TwoFactorAuthRequired"><value>Two factor auth is required.</value></data>
+
+  <data name="TagsReadingError"><value>Server error while reading tags.</value></data>
+  <data name="TagsPostingError"><value>Server error while creating a tag.</value></data>
+  <data name="TagsUpdatingError"><value>Server error while updating tag.</value></data>
+  <data name="TagsDeletingError"><value>Server error while deleting tag.</value></data>
+  <data name="TagNameRequired"><value>Tag name cannot be empty.</value></data>
+  <data name="TagAlreadyExist"><value>Tag name already exists in DB.</value></data>
+
+  <data name="GenreReadingError"><value>Server error while reading genres.</value></data>
+  <data name="GenrePostingError"><value>Server error while creating a genre.</value></data>
+  <data name="GenreUpdatingError"><value>Server error while updating genre.</value></data>
+  <data name="GenreDeletingError"><value>Server error while deleting genre.</value></data>
+  <data name="GenreNameRequired"><value>Genre name cannot be empty.</value></data>
+  <data name="GenreAlreadyExist"><value>Genre name already exists in DB.</value></data>
+
+  <data name="ReadingError"><value>Server error while reading data.</value></data>
+  <data name="UpdatingError"><value>Server error while updating data.</value></data>
+  <data name="DeletingError"><value>Server error while deleting data.</value></data>
+  <data name="EmptyBodyError"><value>Body can't be empty.</value></data>
+  <data name="PostError"><value>Server error while posting to DB.</value></data>
+  <data name="NoContentInDB"><value>No content was found in DB.</value></data>
+  <data name="RequestQueryLengthError"><value>Request must contain at least 3 symbols.</value></data>
+</root>

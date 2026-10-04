@@ -1,0 +1,81 @@
+@using CinemaStock.Client.Extensions
+@using CinemaStock.Client.Pages.Components
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared
+@using CinemaStock.Shared.DTOs.Responses
+@inject CinemaContentClient CinemaContentClient
+
+<div class="library-container">
+    <section class="library-section">
+        <h2 class="section-title">@MainStrings["ContinueWatch"]</h2>
+
+        <div class="media-row">
+            @if (_continueWatching == null)
+            {
+                <div class="glow-skeleton">@MainStrings["HistoryLoad"]</div>
+            }
+            else if (!_continueWatching.Any())
+            {
+                <div class="empty-shelf-text">@MainStrings["HistoryLoadHint"]</div>
+            }
+            else
+            {
+                @foreach (var item in _continueWatching)
+                {
+                    <div class="media-card-continue">
+                        <div class="poster-wrapper">
+                            <img class="poster-img" src="@ImageExtensions.GetPosterUrl(item.Picture)"
+                                alt="@(item.LocalTitle ?? item.OriginalTitle)" />
+
+                            <div class="premium-play-hint">▶</div>
+
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-text-block">
+                            <span class="shelf-card-title">@(item.LocalTitle ?? item.OriginalTitle)</span>
+                            <span class="shelf-card-subtitle">@MainStrings["Progress"]</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="library-section">
+        <h2 class="section-title">@WatchStatus["PlanToWatch"]</h2>
+
+        <div class="media-grid">
+            @if (_watchlist == null)
+            {
+                <div class="glow-skeleton">@MainStrings["CatalogLoading"]</div>
+            }
+            else if (!_watchlist.Any())
+            {
+                <div class="empty-grid-text">@MainStrings["CatalogEmpty"]</div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private List<CinemaContentResponse>? _continueWatching;
+    private List<CinemaContentResponse>? _watchlist;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await CinemaContentClient.GetCinemaContentsListAsync(filter: null);
+
+        if (data != null)
+        {
+            _continueWatching = data.Take(2).ToList();
+            _watchlist = data.Skip(2).ToList();
+        }
+        else
+        {
+            _continueWatching = new();
+            _watchlist = new();
+        }
+    }
+}

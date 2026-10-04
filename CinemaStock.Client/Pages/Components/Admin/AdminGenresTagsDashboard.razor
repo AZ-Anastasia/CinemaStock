@@ -1,0 +1,286 @@
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared.DTOs.Enums
+@using CinemaStock.Shared.DTOs.Responses
+@using CinemaStock.Shared.DTOs.Requests
+@using CinemaStock.Shared.Routes
+@using System.Net
+@inject HttpClient Http
+@inject GenreClient GenreClient
+@inject TagClient TagClient
+@inject IJSRuntime JSRuntime
+
+<div class="cms-genres-dashboard">
+    <div class="catalog-header-row">
+        <h2>@Title</h2>
+        <button type="button" class="cms-btn-primary btn-primary-action-red" @onclick="InsertNewRow"
+            disabled="@_isInserting">
+            @ButtonText
+        </button>
+    </div>
+
+    <div class="cyber-table-container">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>@MainStrings["ID"]</th>
+                    <th>@MainStrings["Title"]</th>
+                    <th class="actions-cell">@MainStrings["Actions"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_isInserting)
+                {
+                    <tr class="inline-edit-row">
+                        <td class="id-placeholder-cell"><i>@MainStrings["NewGuid"]</i></td>
+                        <td>
+                            <input type="text" @bind-value="_nameInput" id="inline-insert-input" @ref="_inputRef"
+                                class="inline-table-input" placeholder="@MainStrings["EnterName"]"
+                                @onkeyup="HandleInsertKeyUp" />
+
+                            @if (!string.IsNullOrEmpty(_errorMessage))
+                            {
+                                <div class="inline-error-message">@_errorMessage</div>
+                            }
+                        </td>
+                        <td class="actions-cell">
+                            <button type="button" class="btn-action-save" @onclick="ExecuteCreate">💾</button>
+                            <button type="button" class="btn-action-cancel" @onclick="CancelInsert">✕</button>
+                        </td>
+                    </tr>
+                }
+
+                @if (_items == null)
+                {
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 20px;">@MainStrings["DataLoading"]</td>
+                    </tr>
+                }
+                else if (!_items.Any() && !_isInserting)
+                {
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 20px;">@MainStrings["NoData"]</td>
+                    </tr>
+                }
+                else if (_items != null)
+                {
+                    @foreach (var item in _items)
+                    {
+                        @if (_editingId == item.Id)
+                        {
+                            <tr class="inline-edit-row">
+                                <td>@item.Id</td>
+                                <td>
+                                    <input type="text" @bind-value="_nameInput" id="@($"inline-edit-input-{item.Id}")"
+                                        @ref="_inputRef" class="inline-table-input" @onkeyup="HandleUpdateKeyUp" />
+
+                                    @if (!string.IsNullOrEmpty(_errorMessage))
+                                    {
+                                        <div class="inline-error-message">@_errorMessage</div>
+                                    }
+                                </td>
+                                <td class="actions-cell">
+                                    <button type="button" class="btn-action-save" @onclick="ExecuteUpdate">💾</button>
+                                    <button type="button" class="btn-action-cancel" @onclick="CancelEditing">✕</button>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td class="genre-name-cell">@item.Name</td>
+                                <td class="actions-cell">
+                                    <button type="button" class="btn-action-edit" @onclick="() => StartEditing(item)">✏️</button>
+                                    <button type="button" class="btn-action-delete"
+                                        @onclick="() => DeleteItem(item.Id)">🗑️</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AdminGenresTagsSelectedType SelectedType { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string ButtonText { get; set; } = string.Empty;
+
+    private List<IdNameResponse>? _items;
+
+    private bool _isInserting = false;
+    private Guid? _editingId = null;
+    private string _nameInput = string.Empty;
+    private ElementReference _inputRef;
+    private string _errorMessage = string.Empty;
+
+    // Переинициализируем данные, если поменялся URL (переключили вкладку)
+    protected override async Task OnParametersSetAsync()
+    {
+        Title = MainStrings["Dictionary"];
+        ButtonText = $"＋ {MainStrings["Add"]}";
+        _isInserting = false;
+        _editingId = null;
+        _nameInput = string.Empty;
+        await RefreshData();
+    }
+
+    private async Task FocusInputAsync(string elementId)
+    {
+        await Task.Delay(1);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{elementId}')?.focus()");
+        }
+        catch { }
+    }
+
+    private async Task InsertNewRow()
+    {
+        CancelEditing();
+        _nameInput = string.Empty;
+        _isInserting = true;
+
+        await FocusInputAsync("inline-insert-input");
+    }
+
+    private async Task StartEditing(IdNameResponse item)
+    {
+        CancelInsert();
+        _editingId = item.Id;
+        _nameInput = item.Name!;
+
+        await FocusInputAsync($"inline-edit-input-{item.Id}");
+    }
+
+    public async Task RefreshData()
+    {
+        try
+        {
+            if (SelectedType == AdminGenresTagsSelectedType.Genres)
+                _items = await GenreClient.GetGenresListAsync();
+            else
+                _items = await TagClient.GetTagsListAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = $"{UserErrors["CouldNotLoadData"]}: {ex.Message}";
+        }
+    }
+
+    private void CancelInsert()
+    {
+        _isInserting = false;
+        _nameInput = string.Empty;
+        _errorMessage = string.Empty;
+    }
+
+    private async Task ExecuteCreate()
+    {
+        if (string.IsNullOrWhiteSpace(_nameInput)) return;
+
+        _errorMessage = string.Empty;
+
+        try
+        {
+            if (SelectedType == AdminGenresTagsSelectedType.Genres)
+            {
+                var request = new CreateGenreOrTagRequest { Name = _nameInput.Trim() };
+                await GenreClient.CreateGenreAsync(request);
+            }
+            else
+            {
+                var request = new CreateGenreOrTagRequest { Name = _nameInput.Trim() };
+                await TagClient.CreateTagAsync(request);
+            }
+
+            _isInserting = false;
+            _nameInput = string.Empty;
+            await RefreshData();
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch
+        {
+            _errorMessage = MainStrings["SaveError"];
+        }
+    }
+
+    private void CancelEditing()
+    {
+        _editingId = null;
+        _nameInput = string.Empty;
+        _errorMessage = string.Empty;
+    }
+
+    private async Task ExecuteUpdate()
+    {
+        if (!_editingId.HasValue || string.IsNullOrWhiteSpace(_nameInput)) return;
+
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var updateModel = new GenreTagRequest
+            {
+                Id = _editingId.Value,
+                Name = _nameInput.Trim()
+            };
+
+            if (SelectedType == AdminGenresTagsSelectedType.Genres)
+                await GenreClient.UpdateGenreAsync(_editingId.Value, updateModel);
+            else
+                await TagClient.UpdateTagAsync(_editingId.Value, updateModel);
+
+            _editingId = null;
+            _nameInput = string.Empty;
+            await RefreshData();
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch
+        {
+            _errorMessage = MainStrings["SaveError"];
+        }
+    }
+
+    private async Task DeleteItem(Guid id)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", MainStrings["DeleteRowConfirm"]);
+
+        if (confirmed)
+        {
+            try
+            {
+                if (SelectedType == AdminGenresTagsSelectedType.Genres)
+                    await GenreClient.DeleteGenreAsync(id);
+                else
+                    await TagClient.DeleteTagAsync(id);
+
+                await RefreshData();
+            }
+            catch (HttpRequestException ex)
+            {
+                _errorMessage = $"{UserErrors["DeletionFailed"]}: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task HandleInsertKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ExecuteCreate();
+        if (e.Key == "Escape") CancelInsert();
+    }
+
+    private async Task HandleUpdateKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ExecuteUpdate();
+        if (e.Key == "Escape") CancelEditing();
+    }
+}

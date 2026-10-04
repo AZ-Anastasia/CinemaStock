@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://w3.org" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="HomeTitle"><value>Main page</value></data>
+  <data name="HomeAllMediaContent"><value>All</value></data>
+  <data name="HomeReleasesTitle"><value>Releases</value></data>
+  <data name="HomeReleasesCount"><value>Count:</value></data>
+  <data name="HomeNoContentTitle"><value>Catalogue is still updating</value></data>
+  <data name="HomeNoContentDescription"><value>There is no content in database. We've been already preparing new releases and containing info. Come back later!</value></data>
+  <data name="HomeMoviesOnly"><value>Movies</value></data>
+  <data name="HomeAnimeOnly"><value>Anime</value></data>
+  <data name="HomeSearch"><value>Content search</value></data>
+  <data name="HomeOpenMenu"><value>Open menu</value></data>
+
+  <data name="SearchInputHint"><value>Films, TV series, anime...</value></data>
+  <data name="SearchInputLengthHint"><value>Enter at least 3 symbols...</value></data>
+  <data name="SearchInputLoading"><value>Searching...</value></data>
+
+  <data name="LoginSignIn"><value>Sign In</value></data>
+  <data name="LoginDescription"><value>Get access to your own content library</value></data>
+  <data name="LoginEmail"><value>Email</value></data>
+  <data name="LoginPassword"><value>Password</value></data>
+  <data name="LoginForgotPassword"><value>Forgot password?</value></data>
+  <data name="LoginSubmit"><value>Sign In</value></data>
+  <data name="LoginNewUser"><value>New user?</value></data>
+  <data name="LoginNewUserCreate"><value>Create account</value></data>
+
+  <data name="Register"><value>Register</value></data>
+  <data name="RegisterBtn"><value>Register</value></data>
+  <data name="RegisterUserName"><value>Username</value></data>
+  <data name="RegisterCreateNewAccount"><value>Create a new account in the system</value></data>
+  <data name="RegisterHaveAccount"><value>Already have an account?</value></data>
+
+  <data name="PasswordPlaceholder"><value>Create a password</value></data>
+  <data name="PasswordConfirm"><value>Confirm password</value></data>
+  <data name="PasswordTooltipIconLabel"><value>Show/hide password</value></data>
+  <data name="PasswordTooltip"><value>Password must contain:</value></data>
+  <data name="PasswordTooltipLength"><value>Length from 8 to 16 symbols</value></data>
+  <data name="PasswordTooltipLengthExample"><value>(example: 12 symbols)</value></data>
+  <data name="PasswordTooltipDigit"><value>Use digits</value></data>
+  <data name="PasswordTooltipDigitExample"><value>(example: 3, 7, 9)</value></data>
+  <data name="PasswordTooltipSpecialSymbol"><value>Use special symbols</value></data>
+  <data name="PasswordTooltipSpecialSymbolExample"><value>(example: #, $, %)</value></data>
+  <data name="PasswordTooltipLatinLetters"><value>Use latin letters</value></data>
+  <data name="PasswordTooltipLatinLettersExample"><value>(example: a, b, c)</value></data>
+  <data name="PasswordTooltipUpperLowerCase"><value>Letters in upper or lower cases</value></data>
+  <data name="PasswordTooltipUpperLowerCaseExample"><value>(example: G and g)</value></data>
+  <data name="PasswordTooltipContainNot"><value>Password MUST NOT contain:</value></data>
+  <data name="PasswordTooltipContainNotExamples"><value>Simple combinations (12345678, qwerty), personal data (names, date of birth) and words from vocabulary (password)</value></data>
+
+  
+  <data name="ID"><value>ID</value></data>
+  <data name="Title"><value>Title</value></data>
+  <data name="OriginalTitle"><value>Original title</value></data>
+  <data name="LocalTitle"><value>Local title</value></data>
+  <data name="Type"><value>Type</value></data>
+  <data name="ReleaseType"><value>Release type</value></data>
+  <data name="ReleaseDate"><value>Release date (YYYY-MM-DD)</value></data>
+  <data name="ReleaseStudio"><value>Release studio</value></data>
+  <data name="InfoFrom"><value>Info from</value></data>
+  <data name="Rating"><value>Rating</value></data>
+  <data name="Poster"><value>Poster</value></data>
+  <data name="Actions"><value>Actions</value></data>
+  <data name="NewGuid"><value>New Guid</value></data>
+  <data name="DataLoading"><value>Data loading...</value></data>
+  <data name="NoData"><value>Data was not found.</value></data>
+  <data name="EnterName"><value>Enter name...</value></data>
+  <data name="DeleteRowConfirm"><value>Do you really want to delete this row?</value></data>
+  <data name="SaveError"><value>Error while saving.</value></data>
+  <data name="Add"><value>Add</value></data>
+  <data name="AddGenre"><value>Add genre</value></data>
+  <data name="AddTag"><value>Add tag</value></data>
+  <data name="Dictionary"><value>DICTIONARY</value></data>
+  <data name="CatalogManagement"><value>Catalog management</value></data>
+  <data name="AddMedia"><value>Add media</value></data>
+  <data name="AddMetadata"><value>Add metadata CinemaStock</value></data>
+  <data name="EditRelease"><value>Release edit</value></data>
+  <data name="NewRelease"><value>New release</value></data>
+  <data name="LoadPoster"><value>Load poster</value></data>
+  <data name="ExampleOriginalTitle"><value>For example, Афоня</value></data>
+  <data name="ExampleLocalTitle"><value>For example, Afonya</value></data>
+  <data name="ExampleReleaseStudio"><value>For example, Mosfilm</value></data>
+  <data name="ExampleInfoFrom"><value>For example, Netflix</value></data>
+  <data name="ContentGenres"><value>Genres</value></data>
+  <data name="ContentTags"><value>Tags</value></data>
+  <data name="GenreSearch"><value>Genre search...</value></data>
+  <data name="TagSearch"><value>Tag search...</value></data>
+  <data name="GenreSelectPlaceholder"><value>Genre select...</value></data>
+  <data name="TagSelectPlaceholder"><value>Tag select...</value></data>
+  <data name="ApplyBtn"><value>Apply</value></data>
+  <data name="Description"><value>Description of mediacontent</value></data>
+  <data name="DescriptionPlaceholder"><value>Add plot description...</value></data>
+  <data name="OwnComment"><value>Own comment</value></data>
+  <data name="OwnCommentPlaceholder"><value>Your own comments...</value></data>
+  <data name="CancelBtn"><value>Cancel</value></data>
+  <data name="SaveBtn"><value>Save</value></data>
+
+  <data name="UserRoleAdmin"><value>Administrator</value></data>
+  <data name="UserRoleUser"><value>User</value></data>
+  <data name="ProfileSettings"><value>Profile settings</value></data>
+  <data name="Management"><value>Management</value></data>
+  <data name="FilmsPanel"><value>Film panel</value></data>
+  <data name="Genres"><value>Genres</value></data>
+  <data name="Tags"><value>Tags</value></data>
+  <data name="Logs"><value>Logs</value></data>
+  <data name="AccessDenied"><value>Access denied</value></data>
+
+  
+  <data name="ContinueWatch"><value>Continue watching</value></data>
+  <data name="HistoryLoad"><value>History load...</value></data>
+  <data name="HistoryLoadHint"><value>Here will be films that you haven't finished watching yet.</value></data>
+  <data name="Progress"><value>Progress:</value></data>
+  <data name="CatalogLoading"><value>Catalog loading...</value></data>
+  <data name="CatalogEmpty"><value>Planned catalog is empty.</value></data>
+  <data name="Media"><value>Media</value></data>
+
+
+  <data name="PasswordsAreNotEqual"><value>Passwords are not equal</value></data>
+  <data name="CheckingRoles"><value>Checking roles.</value></data>
+  <data name="CheckingRolesDescription"><value>Checking roles for better experience.</value></data>
+  <data name="UnhandledError"><value>An unhandled error has occured.</value></data>
+  <data name="Reload"><value>Reload.</value></data>
+  <data name="AuthLoading"><value>Form is loading...</value></data>
+  <data name="WrongAddress"><value>Sorry, there's nothing at this address.</value></data>
+  <data name="NotFound"><value>Not found.</value></data>
+</root>

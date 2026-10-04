@@ -1,0 +1,194 @@
+@page "/profile"
+@using CinemaStock.Client.Auth
+@using CinemaStock.Client.Pages.Components.Admin
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared.DTOs.Enums
+@using CinemaStock.Shared.DTOs.Requests
+@using CinemaStock.Shared.DTOs.Responses
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Logging
+@inject AuthenticationStateProvider AuthStateProvider
+@inject CinemaContentClient CinemaContentClient
+@inject ILogger<Profile> Logger
+@attribute [Authorize]
+
+<div class="profile-layout-container">
+    <aside class="profile-navigation-sidebar">
+        <div class="profile-mini-card">
+            <div class="avatar-glow"></div>
+            <span class="role-badge">
+                <AuthorizeView Roles="Admin">
+                    <Authorized>@MainStrings["UserRoleAdmin"]</Authorized>
+                    <NotAuthorized>@MainStrings["UserRoleUser"]</NotAuthorized>
+                </AuthorizeView>
+            </span>
+        </div>
+
+        <nav class="profile-menu">
+            <button class="menu-item @(currentTab == "settings" ? "active" : "")"
+                @onclick='() => ChangeTab("settings")'>
+                <i class="icon-gear"></i> @MainStrings["ProfileSettings"]
+            </button>
+            <button class="menu-item @(currentTab == "library" ? "active" : "")" @onclick='() => ChangeTab("library")'>
+                <i class="icon-film"></i> @MainStrings["MyLibrary"]
+            </button>
+
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <div class="menu-divider">@MainStrings["Management"]</div>
+                    <button class="menu-item admin-btn @(currentTab == "admin-dashboard" ? "active" : "")"
+                        @onclick='() => ChangeTab("admin-dashboard")'>
+                        <i class="icon-chart"></i> @MainStrings["FilmsPanel"]
+                    </button>
+                    <button class="menu-item admin-btn @(currentTab == "admin-genres" ? "active" : "")"
+                        @onclick='() => ChangeTab("admin-genres")'>
+                        <i class="icon-chart"></i> @MainStrings["Genres"]
+                    </button>
+                    <button class="menu-item admin-btn @(currentTab == "admin-tags" ? "active" : "")"
+                        @onclick='() => ChangeTab("admin-tags")'>
+                        <i class="icon-chart"></i> @MainStrings["Tags"]
+                    </button>
+                    <button class="menu-item admin-btn @(currentTab == "admin-logs" ? "active" : "")"
+                        @onclick='() => ChangeTab("admin-logs")'>
+                        <i class="icon-list"></i> @MainStrings["Logs"]
+                    </button>
+                </Authorized>
+            </AuthorizeView>
+        </nav>
+    </aside>
+
+    <main class="profile-main-content">
+        @switch (currentTab)
+        {
+            case "settings":
+                @* <UserSettingsForm /> *@
+                break;
+
+            case "library":
+                <UserMediaLibrary />
+                break;
+
+            case "admin-dashboard":
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <AdminSystemDashboard @ref="_dashboardRef" OnCreateClick="OpenCmsCreateDrawer"
+                            OnEditClick="async (item) => OpenCmsEditDrawer(item)"
+                            OnDeleteClick="async (id) => await CmsDeleteDrawer(id)" />
+                        <CmsMediaDrawer EditingMediaId="@_editingMediaId" IsOpen="@_isCmsDrawerOpen" IsEditMode="@_isCmsEditMode" RequestModel="@_cmsRequestData"
+                            OnClose="CloseCmsDrawer" OnSaved="RefreshCatalogTable" />
+                    </Authorized>
+                    <NotAuthorized>
+                        <p class="error">@MainStrings["AccessDenied"]</p>
+                    </NotAuthorized>
+                </AuthorizeView>
+                break;
+
+            case "admin-genres":
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <AdminGenresTagsDashboard @key='"genres"' SelectedType="AdminGenresTagsSelectedType.Genres"
+                            Title="@MainStrings["GenresManagement"]" ButtonText="@MainStrings["AddGenre"]" />
+                    </Authorized>
+                    <NotAuthorized>
+                        <p class="error">@MainStrings["AccessDenied"]</p>
+                    </NotAuthorized>
+                </AuthorizeView>
+                break;
+
+            case "admin-tags":
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <AdminGenresTagsDashboard @key='"tags"' SelectedType="AdminGenresTagsSelectedType.Tags"
+                            Title="@MainStrings["TagsManagement"]" ButtonText="@MainStrings["AddTag"]" />
+                    </Authorized>
+                    <NotAuthorized>
+                        <p class="error">@MainStrings["AccessDenied"]</p>
+                    </NotAuthorized>
+                </AuthorizeView>
+                break;
+
+            case "admin-logs":
+                break;
+        }
+    </main>
+</div>
+
+@code {
+    private string currentTab = "settings";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private AdminSystemDashboard? _dashboardRef;
+    private CreateCinemaContentRequest _cmsRequestData = new();
+    private bool _isCmsDrawerOpen = false;
+    private bool _isCmsEditMode = false;
+    private Guid? _editingMediaId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateProvider is JwtAuthenticationStateProvider customProvider)
+        {
+            var updateState = await customProvider.GetAuthenticationStateAsync();
+
+            if (updateState.User.Identity?.IsAuthenticated == true)
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void OpenCmsCreateDrawer()
+    {
+        _cmsRequestData = new CreateCinemaContentRequest();
+        _isCmsEditMode = false;
+        _isCmsDrawerOpen = true;
+        _editingMediaId = null;
+    }
+
+    private void OpenCmsEditDrawer(CinemaContentResponse item)
+    {
+        _editingMediaId = item.Id;
+
+        Logger.LogInformation("Открыли шторку для {id}", _editingMediaId);
+
+        _cmsRequestData = new CreateCinemaContentRequest
+        {
+            OriginalTitle = item.OriginalTitle,
+            LocalTitle = item.LocalTitle,
+            Type = string.IsNullOrEmpty(item.Type) ? ReleaseType.Unknown : Enum.Parse<ReleaseType>(item.Type, true),
+            Rating = item.Rating,
+            Picture = item.Picture,
+            Description = item.Description,
+            ReleaseStudio = item.ReleaseStudio?.Name ?? string.Empty,
+            ReleaseDate = item.ReleaseDate
+        };
+        _isCmsEditMode = true;
+        _isCmsDrawerOpen = true;
+    }
+
+    private async Task CmsDeleteDrawer(Guid id)
+    {
+        await CinemaContentClient.DeleteCinemaContentAsync(id);
+        await RefreshCatalogTable();
+    }
+
+    private void CloseCmsDrawer()
+    {
+        _isCmsDrawerOpen = false;
+    }
+
+    private async Task RefreshCatalogTable()
+    {
+        _isCmsDrawerOpen = false;
+        if (_dashboardRef != null)
+        {
+            await _dashboardRef.RefreshData();
+        }
+    }
+
+    private void ChangeTab(string tabName)
+    {
+        currentTab = tabName;
+    }
+}

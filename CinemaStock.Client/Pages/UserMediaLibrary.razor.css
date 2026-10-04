@@ -1,0 +1,145 @@
+::deep .library-container {
+    padding: 2rem;
+    color: #ffffff;
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.library-section {
+    margin-bottom: 3.5rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.media-row {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+}
+
+.media-row::-webkit-scrollbar {
+    display: none;
+}
+
+.media-card-continue {
+    flex: 0 0 280px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+}
+
+.media-card-continue:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.poster-wrapper {
+    position: relative;
+    height: 160px;
+    background: #1d1d24;
+}
+
+.poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--accent-red, #e50914);
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.premium-play-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #e50914;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.media-card-continue:hover .premium-play-hint {
+    opacity: 1;
+}
+
+.progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #e50914;
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 2rem 1.2rem;
+    width: 100%;
+    justify-content: start;
+}
+
+.shelf-card-title, .grid-card-title {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #e5e5e5;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shelf-card-subtitle, .grid-card-meta {
+    display: block;
+    font-size: 0.75rem;
+    color: #747478;
+    margin: 0;
+}

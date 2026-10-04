@@ -1,0 +1,519 @@
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared
+@using CinemaStock.Shared.DTOs.Enums
+@using CinemaStock.Shared.DTOs.Responses
+@using CinemaStock.Shared.DTOs.Requests
+@using CinemaStock.Shared.Routes
+@using System.IO
+@using System.Net.Http.Headers
+@using System.Globalization
+@inject IJSRuntime JSRuntime
+@inject ILogger<CmsMediaDrawer> Logger
+@inject CinemaContentClient CinemaContentClient
+@inject GenreClient GenreClient
+@inject TagClient TagClient
+
+@if (IsOpen)
+{
+    <div class="cms-drawer-overlay" @onclick="CloseDrawer"></div>
+}
+
+<div class="cms-drawer @(IsOpen ? "active" : "")">
+    <div class="drawer-header">
+        <div class="drawer-header-title">
+            <h4>@(IsEditMode? @MainStrings["EditRelease"] : @MainStrings["NewRelease"])</h4>
+            <span class="drawer-subtitle">@MainStrings["AddMetadata"]</span>
+        </div>
+        <button type="button" class="drawer-close-btn" @onclick="CloseDrawer">✕</button>
+    </div>
+
+    <EditForm Model="@RequestModel" OnValidSubmit="ExecuteSave" class="drawer-form-vertical">
+        <DataAnnotationsValidator />
+
+        <div class="drawer-body-scroll">
+
+            <div class="poster-upload-center-zone">
+                <InputFile @ref="inputFile" OnChange="HandleFileSelected"
+                    accept="@string.Join(',', Options.AllowedExtensions)" style="display:none;" />
+
+                <div @ref="dropArea" tabindex="0"
+                    class="premium-poster-window @(string.IsNullOrWhiteSpace(RequestModel.Picture) ? "empty" : "has-image")"
+                    style=" cursor:pointer" @onclick="TriggerUpload">
+
+                    @if (string.IsNullOrWhiteSpace(previewUrl) && string.IsNullOrWhiteSpace(RequestModel.Picture))
+                    {
+                        <!-- TODO: Реализовать drag-and-drop для загрузки файлов через InputFile -->
+                        <div class="drag-drop-zone">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                class="cyber-svg-icon-heavy">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <span class="svg-placeholder-text">@MainStrings["LoadPoster"]</span>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(previewUrl))
+                        {
+                            <img src="@previewUrl" alt="@MainStrings["Poster"]" @onerror="OnPosterLoadError" />
+                        }
+                        else if (!string.IsNullOrEmpty(RequestModel.Picture))
+                        {
+                            var cleanPath = RequestModel.Picture.TrimStart('/');
+                            <img src="@localhostApi/@cleanPath" alt="@MainStrings["Poster"]" @onerror="OnPosterLoadError" />
+                        }
+                        else
+                        {
+                            <img src="@ConstStrings.DefaultFilmImagePath" />
+                        }
+                    }
+                </div>
+            </div>
+
+            @if (string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="error-message-holder">@errorMessage</div>
+            }
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["OriginalTitle"]</label>
+                <textarea rows="1" @bind="RequestModel.OriginalTitle" required class="cuber-auto-textarea"
+                    placeholder="@MainStrings["ExampleOriginalTitle"]" @oninput="OnTextareaInput"></textarea>
+                <ValidationMessage For="@(() => RequestModel.OriginalTitle)" class="cyber-validation" />
+            </div>
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["LocalTitle"]</label>
+                <textarea rows="1" @bind="RequestModel.LocalTitle" required class="cuber-auto-textarea"
+                    placeholder="@MainStrings["ExampleLocalTitle"]" @oninput="OnTextareaInput"></textarea>
+            </div>
+
+            <div class="input-twin-row">
+                <div class="drawer-input-group">
+                    <label>@MainStrings["ReleaseType"]</label>
+                    <select @bind="RequestModel.Type" class="cyber-select-custom">
+                        @foreach (var type in Enum.GetValues<ReleaseType>())
+                        {
+                            <option value="@type">@type.ToString()</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="drawer-input-group">
+                    <label>@MainStrings["Rating"] (0-10)</label>
+                    <div class="cyber-rating-counter-box">
+                        <button type="button" class="rating-step-btn" tabindex="-1" @onclick="DecreaseRating">−</button>
+                        <input type="number" step="0.1" min="0" max="10" @bind-value="RequestModel.Rating"
+                            class="rating-numeric-input" />
+                        <button type="button" class="rating-step-btn" tabindex="-1" @onclick="IncreaseRating">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["ReleaseDate"]</label>
+            </div>
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["ReleaseStudio"]</label>
+                <input type="text" @bind-value="RequestModel.ReleaseStudio" />
+                <label>@MainStrings["InfoFrom"]</label>
+                <input type="text" @bind-value="RequestModel.SourceInfoFrom"
+                    placeholder="@MainStrings["ExampleInfoFrom"]" maxlength="100" />
+            </div>
+
+            <div class="genres-tags-container">
+                <div class="drawer-input-group popup-anchor">
+                    <label>@MainStrings["ContentGenres"]</label>
+
+                    <div class="genre-dropdown-trigger-box" @onclick="ToggleGenrePopup">
+                        <input type="text" class="genre-display-input" readonly
+                            placeholder="@GetSelectedGenresText()" />
+                        <span class="dropdown-arrow-icon">▼</span>
+                    </div>
+
+                    @if (_isGenrePopupOpen)
+                    {
+                        <div class="genre-floating-popup">
+                            <input type="text" class="genre-popup-search" placeholder="@MainStrings["GenreSearch"]"
+                                @bind-value="_searchQueryGenre" @bind-value:event="oninput" @onclick:stopPropagation />
+
+                            <div class="genre-popup-scroll">
+                                @if (_dbGenres != null)
+                                {
+                                    @foreach (var item in _dbGenres.Where(x => string.IsNullOrEmpty(_searchQueryGenre) ||
+                                                                x.Name!.Contains(_searchQueryGenre, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        var isChecked = RequestModel.GenresIds != null && RequestModel.GenresIds.Contains(item.Id);
+
+                                        <label class="genre-popup-item @(isChecked ? "active" : "")" @onclick:stopPropagation>
+                                            <div class="checkbox-wrapper">
+                                                <input type="checkbox" checked="@isChecked"
+                                                    @onchange="@((e) => HandleGenreToggle(item.Id, (bool)e.Value!))" />
+                                                <span class="custom-checkmark"></span>
+                                            </div>
+                                            <span class="item-name">@item.Name</span>
+                                        </label>
+                                    }
+                                }
+                            </div>
+                            <button type="button" class="genre-popup-close-btn" @onclick="ToggleGenrePopup"
+                                @onclick:stopPropagation>@MainStrings["ApplyBtn"]</button>
+                        </div>
+                    }
+                </div>
+
+                <div class="drawer-input-group popup-anchor">
+                    <label>@MainStrings["ContentTags"]</label>
+
+                    <div class="genre-dropdown-trigger-box" @onclick="ToggleTagPopup">
+                        <input type="text" class="genre-display-input" readonly placeholder="@GetSelectedTagsText()" />
+                        <span class="dropdown-arrow-icon">▼</span>
+                    </div>
+
+
+                    @if (_isTagPopupOpen)
+                    {
+                        <div class="genre-floating-popup">
+                            <input type="text" class="genre-popup-search" placeholder="@MainStrings["TagSearch"]"
+                                @bind-value="_searchQueryTag" @bind-value:event="oninput" @onclick:stopPropagation />
+
+                            <div class="genre-popup-scroll">
+                                @if (_dbTags != null)
+                                {
+                                    @foreach (var item in _dbTags.Where(x => string.IsNullOrEmpty(_searchQueryTag) ||
+                                                                x.Name!.Contains(_searchQueryTag, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        var isChecked = RequestModel.TagsIds != null && RequestModel.TagsIds.Contains(item.Id);
+
+                                        <label class="genre-popup-item @(isChecked ? "active" : "")" @onclick:stopPropagation>
+                                            <div class="checkbox-wrapper">
+                                                <input type="checkbox" checked="@isChecked"
+                                                    @onchange="@((e) => HandleTagToggle(item.Id, (bool)e.Value!))" />
+                                                <span class="custom-checkmark"></span>
+                                            </div>
+                                            <span class="item-name">@item.Name</span>
+                                        </label>
+                                    }
+                                }
+                            </div>
+                            <button type="button" class="genre-popup-close-btn" @onclick="ToggleTagPopup"
+                                @onclick:stopPropagation>@MainStrings["ApplyBtn"]</button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["Description"]</label>
+                <textarea rows="4" @bind="RequestModel.Description"
+                    placeholder="@MainStrings["DescriptionPlaceholder"]"></textarea>
+            </div>
+
+            <div class="drawer-input-group">
+                <label>@MainStrings["OwnComment"]</label>
+                <textarea rows="3" @bind="RequestModel.OwnComment"
+                    placeholder="@MainStrings["OwnCommentPlaceholder"]"></textarea>
+            </div>
+
+        </div>
+
+        <div class="drawer-footer-actions">
+            <button type="button" class="cms-btn-secondary" @onclick="CloseDrawer">@MainStrings["CancelBtn"]</button>
+            <button type="submit" class="cms-btn-primary">@MainStrings["ApplyBtn"]</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    private ElementReference _dateInputRef = default;
+
+    #region Drag and Drop
+
+    private IJSObjectReference? jsModule = default!;
+
+    #endregion
+
+    private string _searchQueryGenre = string.Empty;
+    private string _searchQueryTag = string.Empty;
+    private string _releaseDateText = string.Empty;
+    private bool _isGenrePopupOpen = false;
+    private bool _isTagPopupOpen = false;
+    private List<IdNameResponse>? _dbGenres;
+    private List<IdNameResponse>? _dbTags;
+    private AdminGenresTagsSelectedType _selectedType = default;
+    [Parameter] public Guid? EditingMediaId { get; set; } = default;
+    private bool _isDatePickerOpen = false;
+
+    #region Drag and Drop
+
+    [JSInvokable]
+    public void HandleExternalFile(string base64Data, string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(base64Data)) return;
+
+        errorMessage = null;
+
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        if (!Options.AllowedExtensions.Contains(ext))
+        {
+            errorMessage = $"{UserErrors["BadFileFormat"]}: {string.Join(", ", Options.AllowedExtensions)}";
+            StateHasChanged();
+            return;
+        }
+
+        string base64Raw;
+        int commaIndex = base64Data.IndexOf(',');
+        if (commaIndex != -1)
+            base64Raw = base64Data.Substring(commaIndex + 1);
+        else
+            base64Raw = base64Data;
+
+        var fileBytes = Convert.FromBase64String(base64Raw);
+
+        if (!_imageValidator.IsValidImageSignature(fileBytes))
+        {
+            errorMessage = UserErrors["ErrorFileFormat"];
+            StateHasChanged();
+            return;
+        }
+
+        if (fileBytes.Length > Options.MaxSizeBytes)
+        {
+            errorMessage = $"{UserErrors["TooLargeFileSize"]}: {Options.MaxSizeBytes / 1024 / 1024} МБ.";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            RequestModel.Picture = base64Data;
+            previewUrl = base64Data;
+
+            StateHasChanged();
+        }
+        catch (FormatException ex)
+        {
+            Logger.LogError(ex, "Ошибка чтения файла: неверный формат данных.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка генерации превью файла.");
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        errorMessage = null;
+        var file = e.File;
+        if (file == null) return;
+
+        var ext = Path.GetExtension(file.Name).ToLowerInvariant();
+        if (!Options.AllowedExtensions.Contains(ext))
+        {
+            errorMessage = $"{UserErrors["TooLargeFileSize"]}: {string.Join(", ", Options.AllowedExtensions)}";
+            return;
+        }
+
+        if (file.Size > Options.MaxSizeBytes)
+        {
+            errorMessage = $"{UserErrors["TooLargeFileSize"]}: {Options.MaxSizeBytes / 1024 / 1024} МБ.";
+            return;
+        }
+
+        try
+        {
+            fileToUpload = file;
+
+            if (!string.IsNullOrEmpty(previewUrl))
+            {
+                await jsModule!.InvokeVoidAsync("revokePreviewUrl", previewUrl);
+            }
+
+            RequestModel.Picture = previewUrl;
+            previewUrl = await jsModule!.InvokeAsync<string>("createPreviewUrl", inputFile!.Element);
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка генерации превью файла");
+        }
+    }
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var genresTask = GenreClient.GetGenresListAsync();
+            var tagsTask = TagClient.GetTagsListAsync();
+
+            await Task.WhenAll(genresTask, tagsTask);
+
+            _dbGenres = await genresTask;
+            _dbTags = await tagsTask;
+        }
+        catch (HttpRequestException ex)
+        {
+            Logger.LogError(ex, "Ошибка при инициализации справочников жанров / тегов.");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen)
+        {
+            _dbGenres = null;
+            _dbTags = null;
+
+            await LoadGenresTagsFromDatabase();
+
+            _releaseDateText = RequestModel.ReleaseDate?.ToString(ConstStrings.DefaultDateFormat) ?? string.Empty;
+        }
+    }
+
+    private void ToggleDatePickerPopup()
+    {
+        _isDatePickerOpen = !_isDatePickerOpen;
+
+        if (_isDatePickerOpen)
+            _isGenrePopupOpen = false;
+    }
+
+    private async Task OpenCalendarPicker()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("HTMLElement.prototype.showPicker.call", _dateInputRef);
+        }
+        catch
+        {
+            await _dateInputRef.FocusAsync();
+        }
+    }
+
+    private void OnCalendarDateSelected(ChangeEventArgs e)
+    {
+        if (RequestModel.ReleaseDate.HasValue)
+            _releaseDateText = RequestModel.ReleaseDate.Value.ToString(ConstStrings.DefaultDateFormat);
+    }
+
+    private void OnTextareaInput(ChangeEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    private async Task LoadGenresTagsFromDatabase()
+    {
+        try
+        {
+            var genreTask = FetchDataFromApi(ApiRoutes.Admin.GenresControllerName);
+            var tagTask = FetchDataFromApi(ApiRoutes.Admin.TagsControllerName);
+
+            await Task.WhenAll(genreTask, tagTask);
+
+            _dbGenres = await genreTask;
+            _dbTags = await tagTask;
+        }
+        catch (Exception ex)
+        {
+            _dbGenres = [];
+            _dbTags = [];
+            Logger.LogError(ex, "Ошибка динамической загрузки жанров/тегов.");
+        }
+    }
+
+    private void ToggleGenrePopup()
+    {
+        _isGenrePopupOpen = !_isGenrePopupOpen;
+        if (_isGenrePopupOpen) _isTagPopupOpen = false;
+    }
+
+    private void ToggleTagPopup()
+    {
+        _isTagPopupOpen = !_isTagPopupOpen;
+        if (_isTagPopupOpen) _isGenrePopupOpen = false;
+    }
+
+    private void HandleGenreToggle(Guid id, bool isChecked)
+    {
+        RequestModel.GenresIds ??= new List<Guid>();
+        if (isChecked) RequestModel.GenresIds.Add(id);
+        else RequestModel.GenresIds.Remove(id);
+    }
+
+    private void HandleTagToggle(Guid id, bool isChecked)
+    {
+        RequestModel.TagsIds ??= new List<Guid>();
+        if (isChecked) RequestModel.TagsIds.Add(id);
+        else RequestModel.TagsIds.Remove(id);
+    }
+
+    private string GetSelectedGenresText()
+    {
+        if (RequestModel.GenresIds == null || !RequestModel.GenresIds.Any() || _dbGenres == null)
+            return MainStrings["GenreSelectPlaceholder"];
+        return string.Join(", ", _dbGenres.Where(x => RequestModel.GenresIds.Contains(x.Id)).Select(x => x.Name));
+    }
+
+    private string GetSelectedTagsText()
+    {
+        if (RequestModel.TagsIds == null || !RequestModel.TagsIds.Any() || _dbTags == null)
+            return MainStrings["TagSelectPlaceholder"];
+        return string.Join(", ", _dbTags.Where(x => RequestModel.TagsIds.Contains(x.Id)).Select(x => x.Name));
+    }
+
+    private async Task OnCalendarDateChanged(DateOnly? newDate)
+    {
+        RequestModel.ReleaseDate = newDate;
+        _releaseDateText = newDate?.ToString(ConstStrings.DefaultDateFormat) ?? string.Empty;
+        await Task.CompletedTask;
+    }
+
+    private void IncreaseRating()
+    {
+        if (RequestModel.Rating == null) RequestModel.Rating = 0;
+        if (RequestModel.Rating < 10m) RequestModel.Rating = Math.Min(10m, RequestModel.Rating.Value + 0.5m);
+    }
+
+    private void DecreaseRating()
+    {
+        if (RequestModel.Rating == null) RequestModel.Rating = 0;
+        if (RequestModel.Rating > 0m) RequestModel.Rating = Math.Max(0m, RequestModel.Rating.Value - 0.5m);
+    }
+
+    private void HandleGenreTagToggle(Guid genreOrTagId, bool isChecked)
+    {
+        if (_selectedType == AdminGenresTagsSelectedType.Genres)
+        {
+            RequestModel.GenresIds ??= new List<Guid>();
+            if (isChecked)
+            {
+                if (!RequestModel.GenresIds.Contains(genreOrTagId))
+                    RequestModel.GenresIds.Add(genreOrTagId);
+            }
+            else
+                RequestModel.GenresIds.Remove(genreOrTagId);
+        }
+        else
+        {
+            RequestModel.TagsIds ??= new List<Guid>();
+            if (isChecked)
+            {
+                if (!RequestModel.TagsIds.Contains(genreOrTagId))
+                    RequestModel.TagsIds.Add(genreOrTagId);
+            }
+            else
+                RequestModel.TagsIds.Remove(genreOrTagId);
+        }
+    }
+
+    private void OnPosterLoadError() => RequestModel.Picture = string.Empty;
+}

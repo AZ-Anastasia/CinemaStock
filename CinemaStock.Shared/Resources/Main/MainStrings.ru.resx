@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://w3.org" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="HomeTitle"><value>Главная страница</value></data>
+  <data name="HomeAllMediaContent"><value>Все</value></data>
+  <data name="HomeReleasesTitle"><value>Релизы</value></data>
+  <data name="HomeReleasesCount"><value>Всего:</value></data>
+  <data name="HomeNoContentTitle"><value>Каталог еще обновляется</value></data>
+  <data name="HomeNoContentDescription"><value>В базе данных нет информации о фильмах. Мы уже готовим новые релизы и собираем информацию. Возвращайтесь позже!</value></data>
+  <data name="HomeMoviesOnly"><value>Фильмы</value></data>
+  <data name="HomeAnimeOnly"><value>Аниме</value></data>
+  <data name="HomeSearch"><value>Поиск контента</value></data>
+  <data name="HomeOpenMenu"><value>Открыть меню</value></data>
+
+  <data name="SearchInputHint"><value>Фильмы, сериалы, аниме...</value></data>
+  <data name="SearchInputLengthHint"><value>Введите минимум 3 символа...</value></data>
+  <data name="SearchInputLoading"><value>Ищем...</value></data>
+
+  <data name="LoginSignIn"><value>Войти в профиль</value></data>
+  <data name="LoginDescription"><value>Получите доступ к вашей персональной библиотеке контента</value></data>
+  <data name="LoginEmail"><value>Электронная почта</value></data>
+  <data name="LoginPassword"><value>Пароль</value></data>
+  <data name="LoginForgotPassword"><value>Забыли пароль?</value></data>
+  <data name="LoginSubmit"><value>Войти</value></data>
+  <data name="LoginNewUser"><value>Новый пользователь?</value></data>
+  <data name="LoginNewUserCreate"><value>Создать аккаунт</value></data>
+
+  <data name="Register"><value>Регистрация</value></data>
+  <data name="RegisterBtn"><value>Зарегистрироваться</value></data>
+  <data name="RegisterUserName"><value>Имя пользователя</value></data>
+  <data name="RegisterCreateNewAccount"><value>Создайте новый аккаунт в системе</value></data>
+  <data name="RegisterHaveAccount"><value>Уже есть аккаунт?</value></data>
+
+  <data name="PasswordPlaceholder"><value>Придумайте пароль</value></data>
+  <data name="PasswordConfirm"><value>Повторите пароль</value></data>
+  <data name="PasswordTooltipIconLabel"><value>Показать/скрыть пароль</value></data>
+  <data name="PasswordTooltip"><value>Надежный пароль должен содержать:</value></data>
+  <data name="PasswordTooltipLength"><value>Длина от 8 до 16 символов</value></data>
+  <data name="PasswordTooltipLengthExample"><value>(пример: 12-значный)</value></data>
+  <data name="PasswordTooltipDigit"><value>Использовать цифры</value></data>
+  <data name="PasswordTooltipDigitExample"><value>(пример: 3, 7, 9)</value></data>
+  <data name="PasswordTooltipSpecialSymbol"><value>Использовать спецсимволы</value></data>
+  <data name="PasswordTooltipSpecialSymbolExample"><value>(пример: #, $, %)</value></data>
+  <data name="PasswordTooltipLatinLetters"><value>Буквы латинского алфавита</value></data>
+  <data name="PasswordTooltipLatinLettersExample"><value>(пример: a, b, c)</value></data>
+  <data name="PasswordTooltipUpperLowerCase"><value>Буквы в разных регистрах</value></data>
+  <data name="PasswordTooltipUpperLowerCaseExample"><value>(пример: G и g)</value></data>
+  <data name="PasswordTooltipContainNot"><value>НЕ НАДО ВЫБИРАТЬ:</value></data>
+  <data name="PasswordTooltipContainNotExamples"><value>Простые комбинации (12345678, qwerty), личные данные (имена, даты рождения) и слова из словаря (password).</value></data>
+
+  <data name="ID"><value>ID</value></data>
+  <data name="Title"><value>Название</value></data>
+  <data name="OriginalTitle"><value>Оригинальное название</value></data>
+  <data name="LocalTitle"><value>Локальное название</value></data>
+  <data name="Type"><value>Тип</value></data>
+  <data name="ReleaseType"><value>Тип релиза</value></data>
+  <data name="ReleaseDate"><value>Дата релиза (ГГГГ-ММ-ДД)</value></data>
+  <data name="ReleaseStudio"><value>Студия производства</value></data>
+  <data name="InfoFrom"><value>Источник информации</value></data>
+  <data name="Rating"><value>Рейтинг</value></data>
+  <data name="Poster"><value>Постер</value></data>
+  <data name="Actions"><value>Действия</value></data>
+  <data name="NewGuid"><value>Новый Guid</value></data>
+  <data name="DataLoading"><value>Загрузка данных...</value></data>
+  <data name="NoData"><value>Данные не найдены.</value></data>
+  <data name="EnterName"><value>Введите название...</value></data>
+  <data name="DeleteRowConfirm"><value>Вы действительно хотите удалить эту запись?</value></data>
+  <data name="SaveError"><value>Ошибка при сохранении.</value></data>
+  <data name="Add"><value>Добавить</value></data>
+  <data name="AddGenre"><value>Добавить жанр</value></data>
+  <data name="AddTag"><value>Добавить тег</value></data>
+  <data name="Dictionary"><value>СПРАВОЧНИК</value></data>
+  <data name="GenresManagement"><value>УПРАВЛЕНИЕ ЖАНРАМИ</value></data>
+  <data name="TagsManagement"><value>УПРАВЛЕНИЕ ТЕГАМИ</value></data>
+  <data name="CatalogManagement"><value>Управление каталогом</value></data>
+  <data name="AddMedia"><value>Добавить медиа</value></data>
+  <data name="AddMetadata"><value>Заполнение метаданных CinemaStock</value></data>
+  <data name="EditRelease"><value>Редактирование релиза</value></data>
+  <data name="NewRelease"><value>Новый релиз</value></data>
+  <data name="LoadPoster"><value>Загрузить постер</value></data>
+  <data name="ExampleOriginalTitle"><value>Например, The Matrix</value></data>
+  <data name="ExampleLocalTitle"><value>Например, Матрица</value></data>
+  <data name="ExampleReleaseStudio"><value>Например, Warner Bros.</value></data>
+  <data name="ExampleInfoFrom"><value>Например, Кинопоиск</value></data>
+  <data name="ContentGenres"><value>Жанры контента</value></data>
+  <data name="ContentTags"><value>Теги контента</value></data>
+  <data name="GenreSearch"><value>Поиск жанра...</value></data>
+  <data name="TagSearch"><value>Поиск тега...</value></data>
+  <data name="GenreSelectPlaceholder"><value>Выберите жанр...</value></data>
+  <data name="TagSelectPlaceholder"><value>Выберите тег...</value></data>
+  <data name="ApplyBtn"><value>Применить</value></data>
+  <data name="Description"><value>Описание медиаконтента</value></data>
+  <data name="DescriptionPlaceholder"><value>Добавьте описание сюжета...</value></data>
+  <data name="OwnComment"><value>Личный комментарий</value></data>
+  <data name="OwnCommentPlaceholder"><value>Ваши личные заметки...</value></data>
+  <data name="CancelBtn"><value>Отмена</value></data>
+  <data name="SaveBtn"><value>Сохранить</value></data>
+
+  <data name="UserRoleAdmin"><value>Администратор</value></data>
+  <data name="UserRoleUser"><value>Пользователь</value></data>
+  <data name="ProfileSettings"><value>Настройки профиля</value></data>
+  <data name="MyLibrary"><value>Моя библиотека</value></data>
+  <data name="Management"><value>Управление</value></data>
+  <data name="FilmsPanel"><value>Панель фильмов</value></data>
+  <data name="Genres"><value>Жанры</value></data>
+  <data name="Tags"><value>Теги</value></data>
+  <data name="Logs"><value>Логи системы</value></data>
+  <data name="AccessDenied"><value>Доступ запрещен</value></data>
+
+  
+  <data name="ContinueWatch"><value>Продолжить просмотр</value></data>
+  <data name="HistoryLoad"><value>Загрузка истории...</value></data>
+  <data name="HistoryLoadHint"><value>Здесь будут фильмы, которые вы не досмотрели.</value></data>
+  <data name="Progress"><value>Прогресс:</value></data>
+  <data name="CatalogLoading"><value>Загрузка каталога...</value></data>
+  <data name="CatalogEmpty"><value>Список запланированного пуст.</value></data>
+  <data name="Media"><value>Медиа</value></data>
+
+
+
+  <data name="PasswordsAreNotEqual"><value>Пароли не совпадают</value></data>
+  <data name="CheckingRoles"><value>Проверка прав доступа.</value></data>
+  <data name="CheckingRolesDescription"><value>Проверка прав доступа для лучшего пользовательского опыта.</value></data>
+  <data name="UnhandledError"><value>Произошла ошибка.</value></data>
+  <data name="Reload"><value>Перезагрузка.</value></data>
+  <data name="AuthLoading"><value>Загрузка формы...</value></data>
+  <data name="WrongAddress"><value>Извините, по этому адресу ничего нет.</value></data>
+  <data name="NotFound"><value>Не найдено.</value></data>
+</root>

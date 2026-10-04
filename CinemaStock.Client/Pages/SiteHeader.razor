@@ -1,0 +1,310 @@
+@using CinemaStock.Client.Extensions
+@using CinemaStock.Client.Pages.Components
+@using System.Threading.Tasks
+@using CinemaStock.Client.Services.Clients
+@using CinemaStock.Shared.DTOs.Responses
+@using CinemaStock.Shared.Routes
+@inject NavigationManager NavManager
+@inject ILogger<SiteHeader> Logger
+
+<header class="site-header">
+    <div class="header-container">
+        <div class="header-left">
+            <a href="/" class="site-logo" aria-label="CinemaStock Главная">
+                <svg class="logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org">
+                    <!-- Рамка фокуса камеры -->
+                    <path d="M7 4H4V7M17 4H20V7M7 20H4V17M17 20H20V17" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <!-- Чистый треугольник Play по центру -->
+                    <path d="M10.5 8.5V15.5L15.5 12L10.5 8.5Z" fill="var(--accent-red)" stroke="var(--accent-red)"
+                        stroke-width="1.5" stroke-linejoin="round" />
+                </svg>
+                <span class="logo-text">Cinema<span class="logo-text-accent">Stock</span></span>
+            </a>
+
+            <nav class="desktop-navigation @(_isMobileMenuOpen ? "active" : "" )">
+                <a href="/" class="nav-link">@MainStrings["HomeAllMediaContent"]</a>
+                <a href="/@ApiRoutes.Admin.GetCinemaContent" class="nav-link">@MainStrings["HomeMoviesOnly"]</a>
+                <a href="/anime" class="nav-link">@MainStrings["HomeAnimeOnly"]</a>
+            </nav>
+        </div>
+
+
+        <div class="header-right">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <svg class="search-field-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://w3.org">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+
+                    <input type="text" class="search-input-field" placeholder="@MainStrings["SearchInputHint"]"
+                        @bind="SearchQuery" @bind:event="oninput" @bind:after="OnSearchInput" @onkeyup="HandleKeyUp"
+                        @onfocus="HandleFocus" @onblur="HandleBlur" aria-label="@MainStrings["HomeSearch"]" />
+
+                    @if (_isOverlayVisible)
+                    {
+                        <div class="search-overlay">
+                            @if (SearchQuery.Length < 3)
+                            {
+                                <div class="search-status-text">@MainStrings["SearchInputLengthHint"]</div>
+                            }
+                            else if (_isSearching)
+                            {
+                                <div class="search-status-text">@MainStrings["SearchInputLoading"]</div>
+                            }
+                            else
+                            {
+                                <div class="fast-results-container">
+                                    @if (_isSearching)
+                                    {
+                                        <div class="search-status-text">@MainStrings["SearchInputLoading"]</div>
+                                    }
+                                    else if (!_searchResults.Any() && SearchQuery?.Length >= 3)
+                                    {
+                                        <div class="search-status-text">@MainStrings["NotFound"]</div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var item in _searchResults)
+                                        {
+                                            <div class="fast-search-item"
+                                                @onclick='()=> NavManager.NavigateTo($"{ApiRoutes.Admin.GetCinemaContent}/{item.Id}")'>
+                                                            <img class="fast-search-poster" src="@ImageExtensions.GetPosterUrl(item.Picture)" alt="@item.LocalTitle"/>
+                                                                <div class="fast-search-info">
+                                                                    <span class="fast-search-title">@(item.LocalTitle ?? item.OriginalTitle)</span>
+                                                                    <span class="fast-search-meta">@item.Rating.ToString("F1") @(item.ReleaseDate?.Year.ToString() ?? "-")</span>
+                                                                </div>
+                                                            </div>
+                                                    }
+                                            }
+                                        </div>
+                                }
+                            </div>
+                    }
+                </div>
+            </div>
+
+            <div class="profile-dropdown-trigger" @onclick="HandleProfileClick">
+                <div class="avatar-wrapper">
+                    <svg xmlns="http://w3.org" viewBox="0 0 500 312" width="100%" height="100%">
+                        <defs>
+                            <linearGradient id="siteAccentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#393851" />
+                                <stop offset="100%" stop-color="#CC001B" />
+                            </linearGradient>
+
+                            <mask id="complexTicketMask">
+                                <rect x="52" y="38" width="396" height="236" rx="16" fill="#FFFFFF" />
+                                <circle cx="52" cy="156" r="14" fill="#000000" />
+                                <circle cx="448" cy="156" r="14" fill="#000000" />
+                                <circle cx="52" cy="38" r="14" fill="#000000" />
+                                <circle cx="448" cy="38" r="14" fill="#000000" />
+                                <circle cx="52" cy="274" r="14" fill="#000000" />
+                                <circle cx="448" cy="274" r="14" fill="#000000" />
+                            </mask>
+
+                            <mask id="innerTicketContent">
+                                <rect x="52" y="38" width="396" height="236" rx="16" fill="#FFFFFF" />
+                            </mask>
+                        </defs>
+
+                        <rect width="500" height="312" rx="72" fill="url(#siteAccentGrad)" />
+                        <rect x="52" y="38" width="396" height="236" rx="16" fill="#FFFFFF"
+                            mask="url(#complexTicketMask)" />
+
+                        <g fill="#07070A" mask="url(#innerTicketContent)">
+                            <g transform="translate(19, 0)">
+                                <g transform="translate(262, 156)">
+                                    <path d="M 40,40 C 65,75 90,85 105,75 C 92,68 75,50 55,25 Z" />
+                                    <circle cx="0" cy="0" r="90" />
+                                    <circle cx="0" cy="0" r="15" fill="#FFFFFF" />
+                                    <circle cx="0" cy="-52" r="13" fill="#FFFFFF" />
+                                    <circle cx="52" cy="0" r="13" fill="#FFFFFF" />
+                                    <circle cx="0" cy="52" r="13" fill="#FFFFFF" />
+                                    <circle cx="-52" cy="0" r="13" fill="#FFFFFF" />
+                                </g>
+                                <g transform="translate(167, 126)">
+                                    <circle cx="0" cy="0" r="42" fill="#FFFFFF" />
+                                    <path d="M -65,108 C -65,54 -35,40 0,40 C 35,40 65,54 65,108 Z" fill="#FFFFFF"
+                                        stroke="#FFFFFF" stroke-width="16" stroke-linejoin="round" />
+                                    <circle cx="0" cy="0" r="34" />
+                                    <path d="M -65,108 C -65,62 -35,48 0,48 C 35,48 65,62 65,108 Z" />
+                                </g>
+                            </g>
+                            <rect x="92" y="58" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="83" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="108" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="133" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="158" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="183" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="208" width="7" height="15" rx="3.5" />
+                            <rect x="92" y="233" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="58" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="83" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="108" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="133" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="158" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="183" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="208" width="7" height="15" rx="3.5" />
+                            <rect x="401" y="233" width="7" height="15" rx="3.5" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        @* Mobile menu *@
+        <button type="button" class="mobile-menu-toggle" aria-label="@MainStrings["HomeOpenMenu"]"
+            @onclick="ToggleMobileMenu">
+            <svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://w3.org">
+                @if (_isMobileMenuOpen)
+                {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                }
+                else
+                {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                }
+            </svg>
+        </button>
+    </div>
+</header>
+
+@code {
+    @implements IDisposable
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private bool _isMobileMenuOpen = false;
+
+    private bool _isOverlayVisible;
+    private bool _isSearching;
+    private CancellationTokenSource? _cts;
+
+    private string SearchQuery { get; set; } = string.Empty;
+    private bool _isSearchExpanded = false;
+    private List<CinemaContentResponse> _searchResults = new();
+    [Inject] private CinemaContentClient _cinemaContentClient { get; set; } = null!;
+
+    private void ToggleMobileMenu()
+    {
+        _isMobileMenuOpen = !_isMobileMenuOpen;
+    }
+
+    private async Task OnSearchInput()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            _isOverlayVisible = false;
+            _searchResults.Clear();
+            _cts?.Cancel();
+            return;
+        }
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var currentToken = _cts.Token;
+
+        try
+        {
+            // Искусственная пауза Debounce
+            await Task.Delay(350, currentToken);
+            await TriggerLiveSearch(currentToken);
+        }
+        catch (TaskCanceledException)
+        {
+            // Игнорируем — пользователь продолжает вводить символы
+        }
+    }
+
+    private async Task TriggerLiveSearch(CancellationToken token)
+    {
+        _isOverlayVisible = true;
+
+        if (SearchQuery.Length < 3)
+        {
+            _isSearching = false;
+            _searchResults.Clear();
+            return;
+        }
+
+        _isSearching = true;
+        StateHasChanged();
+
+        try
+        {
+            Logger.LogInformation("Живой поиск в шапке. Запрос: {Query}", SearchQuery);
+            await Task.Delay(300, token);
+            _searchResults = await _cinemaContentClient.GetCinemaContentsSearchLiveListAsync(SearchQuery, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        finally
+        {
+            _isSearching = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            _cts?.Cancel();
+            _isOverlayVisible = false;
+            RedirectToDeepSearch();
+        }
+    }
+
+    private void HandleFocus()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            _isOverlayVisible = true;
+        }
+    }
+
+    private async Task HandleBlur()
+    {
+        await Task.Delay(250);
+        _isOverlayVisible = false;
+    }
+
+    private void RedirectToDeepSearch()
+    {
+        var escapedQuery = Uri.EscapeDataString(SearchQuery);
+        NavManager.NavigateTo($"search?query={escapedQuery}");
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+
+    private void ToggleSearch() => _isSearchExpanded = !_isSearchExpanded;
+    private void CollapseSearch() => _isSearchExpanded = false;
+    private async Task HandleProfileClick()
+    {
+        if (AuthStateTask != null)
+        {
+            var authState = await AuthStateTask;
+            var user = authState.User;
+
+            if (user.Identity is { IsAuthenticated: true })
+            {
+                Logger.LogInformation("Пользователь {Identity} переходит в профиль.", user.Identity.Name);
+                NavManager.NavigateTo(ApiRoutes.Account.ProfileEndpoint);
+                return;
+            }
+        }
+        NavManager.NavigateTo(ApiRoutes.Account.LoginEndpoint);
+    }
+}

@@ -1,0 +1,38 @@
+:root {
+    --bg-main: #393851;
+    --input-login: #29293b;
+    --input-focus-border: rgb(146, 153, 165, 0.5);
+    --input-focus-shadow: rgba(57, 56, 81, 0.3);
+    --bg-surface: #12121b;
+    --accent-red: #e50914;
+    --text-primary: #f3f4f6;
+    --text-muted: #9ca3af;
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --header-btn-active: rgba(255, 255, 255, 0.08);
+
+    --accent-red: #cc001b;
+    --accent-red-hover: #ff0022;
+
+    --accent-btn-hover-dark: #8a0011;
+    --accent-link: #ff334b;
+
+    --shadow-base-dark: rgba(0, 0, 0, 0.8);
+    --neon-glow-card: rgba(255, 46, 68, 0.15);
+    --neon-glow-btn: rgba(204, 0, 27, 0.55);
+    --neon-glow-btn-hover: rgba(138, 0, 17, 0.7);
+}
+
+html,
+body {
+    overflow-x: hidden;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+}

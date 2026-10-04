@@ -1,0 +1,54 @@
+.profile-layout-container {
+    max-width: 1440px;
+    margin: 2rem auto;
+    padding: 0 max(1rem, 3vw);
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.profile-navigation-sidebar {
+    width: 280px;
+    background-color: rgba(18, 18, 27, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    flex-shrink: 0;
+}
+
+.profile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: rgba(255, 255, 255, 0.04);
+    border-radius: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+    color: #f3f4f6;
+    background-color: #29293b;
+    border-color: rgba(146, 153, 165, 0.5);
+}
+
+.profile-main-content {
+    flex: 1;
+    width: 100%;
+}

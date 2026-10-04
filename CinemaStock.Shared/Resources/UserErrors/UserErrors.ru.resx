@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://w3.org" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="CouldNotLoadData"><value>Не удалось загрузить данные</value></data>
+  <data name="DeletionFailed"><value>Ошибка удаления</value></data>
+  <data name="ServerConnectionFailed"><value>Ошибка связи с сервером</value></data>
+
+  <data name="SizeInMB"><value>МБ</value></data>
+  <data name="BadFileFormat"><value>Формат не поддерживается. Допустимые</value></data>
+  <data name="TooLargeFileSize"><value>Файл слишком велик. Максимум</value></data>
+  <data name="ErrorFileFormat"><value>Формат поврежден или содержит вредоносный код (не совпадает сигнатура изображения).</value></data>
+
+  <data name="BadLoginOrPassword"><value>Неверный логин или пароль.</value></data>
+  <data name="AccountBlocked"><value>Аккаунт заблокирован из-за множества неверных попыток входа.</value></data>
+  <data name="LoginIsNotAllowed"><value>Вход не разрешен. Возможно, требуется подтверждение Email в БД (EmailConfirmed = true).</value></data>
+  <data name="TwoFactorAuthRequired"><value>Требуется двухфакторная аутентификация.</value></data>
+
+  <data name="TagsReadingError"><value>Внутренняя ошибка сервера при чтении справочника тегов.</value></data>
+  <data name="TagsPostingError"><value>Внутренняя ошибка сервера при создании тега.</value></data>
+  <data name="TagsUpdatingError"><value>Внутренняя ошибка сервера при обновлении тега.</value></data>
+  <data name="TagsDeletingError"><value>Внутренняя ошибка сервера при удалении тега.</value></data>
+  <data name="TagNameRequired"><value>Название тега не может быть пустым.</value></data>
+  <data name="TagAlreadyExist"><value>Такой тег уже существует в БД.</value></data>
+
+  <data name="GenreReadingError"><value>Внутренняя ошибка сервера при чтении справочника жанров.</value></data>
+  <data name="GenrePostingError"><value>Внутренняя ошибка сервера при создании жанра.</value></data>
+  <data name="GenreUpdatingError"><value>Внутренняя ошибка сервера при обновлении жанра.</value></data>
+  <data name="GenreDeletingError"><value>Внутренняя ошибка сервера при удалении жанра.</value></data>
+  <data name="GenreNameRequired"><value>Название жанра не может быть пустым.</value></data>
+  <data name="GenreAlreadyExist"><value>Такой жанр уже существует в БД.</value></data>
+
+  <data name="ReadingError"><value>Внутренняя ошибка сервера при чтении записей.</value></data>
+  <data name="UpdatingError"><value>Внутренняя ошибка сервера при обновлении записей.</value></data>
+  <data name="DeletingError"><value>Внутренняя ошибка сервера при удалении записей.</value></data>
+  <data name="EmptyBodyError"><value>Тело запроса не может быть пустым.</value></data>
+  <data name="PostError"><value>Внутренняя ошибка сервера при записи в БД.</value></data>
+  <data name="NoContentInDB"><value>Киноконтент не найден в БД.</value></data>
+  <data name="RequestQueryLengthError"><value>Запрос должен содержать минимум 3 символа.</value></data>
+</root>

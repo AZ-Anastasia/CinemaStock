@@ -1,0 +1,234 @@
+@page "/register"
+@using CinemaStock.Client.Pages.Components
+@using CinemaStock.Shared.ApiEndpointControllers
+@using CinemaStock.Shared.Routes
+@using Microsoft.AspNetCore.Authorization
+@inject ILogger<Register> Logger
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IAccountService AccountService
+
+@attribute [AllowAnonymous]
+
+<div class="premium-dark-container">
+    <div class="ambient-glow"></div>
+
+    <div class="register-card">
+        <div class="card-header">
+            <h2>@MainStrings["Register"]</h2>
+            <p>@MainStrings["RegisterCreateNewAccount"]</p>
+        </div>
+
+        <ErrorBlock ErrorMessages="@_identityErrors" />
+
+        <form class="register-form" @onsubmit="HandleRegistration" @onsubmit:preventDefault>
+            <div class="input-group">
+                <label for="reg-username">@MainStrings["RegisterUserName"]</label>
+                <div class="input-wrapper">
+                    <input type="text" id="reg-username" placeholder="username" required @bind="_username" />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="email">@MainStrings["LoginEmail"]</label>
+                <div class="input-wrapper">
+                    <input type="email" id="email" placeholder="example@mail.com" required @bind="_email" />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="reg-password">@MainStrings["LoginPassword"]</label>
+                <div class="input-wrapper">
+                    <input type="@(_showPassword ? "text" : "password")" class="has-actions" id="reg-password"
+                        placeholder="@MainStrings["PasswordPlaceholder"]" required maxlength="16" value="@_password"
+                        @oninput="HandlePasswordInput" />
+
+                    <div class="input-actions-container">
+                        <div class="tooltip-container">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <div class="tooltip-window">
+                                <div class="tooltip-title">@MainStrings["PasswordTooltip"]</div>
+                                <ul>
+                                    <li class="@(_isLengthValid ? "valid" : "")">@MainStrings["PasswordTooltipLength"]
+                                        <span>@MainStrings["PasswordTooltipLengthExample"]</span>
+                                    </li>
+                                    <li class="@(_hasNumbers ? "valid" : "")">@MainStrings["PasswordTooltipDigit"]
+                                        <span>@MainStrings["PasswordTooltipDigitExample"]</span>
+                                    </li>
+                                    <li class="@(_hasSpecial ? "valid" : "")">
+                                        @MainStrings["PasswordTooltipSpecialSymbol"]
+                                        <span>@MainStrings["PasswordTooltipSpecialSymbolExample"]</span>
+                                    </li>
+                                    <li class="@(_hasLetters ? "valid" : "")">
+                                        @MainStrings["PasswordTooltipLatinLetters"]
+                                        <span>@MainStrings["PasswordTooltipLatinLettersExample"]</span>
+                                    </li>
+                                    <li class="@(_hasUpperCase && _hasLowerCase ? "valid" : "")">
+                                        @MainStrings["PasswordTooltipUpperLowerCase"]
+                                        <span>@MainStrings["PasswordTooltipUpperLowerCaseExample"]</span>
+                                    </li>
+                                </ul>
+                                <div class="tooltip-warning">
+                                    <strong>@MainStrings["PasswordTooltipContainNot"]</strong>
+                                    @MainStrings["PasswordTooltipContainNotExamples"]
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="icon-btn" tabindex="-1" @onclick="TogglePasswordVisibility">
+                            @if (_showPassword)
+                            {
+                                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_password))
+                {
+                    <div class="strength-meter">
+                        <div class="strength-bar @StrengthClass" style="width: @(StrengthPercent)%"></div>
+                    </div>
+                }
+            </div>
+
+            <div class="input-group">
+                <label for="confirm-password">@MainStrings["PasswordConfirm"]</label>
+                <div class="input-wrapper">
+                    <input type="@(_showConfirmPassword ? "text" : "password")" class="has-actions"
+                        id="confirm-password" placeholder="@MainStrings["PasswordConfirm"]" required maxlength="16"
+                        @bind="_confirmPassword" />
+
+                    <div class="input-actions-container">
+                        <button type="button" class="icon-btn" tabindex="-1" @onclick="ToggleConfirmPasswordVisibility">
+                            @if (_showConfirmPassword)
+                            {
+                                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            }
+                        </button>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(_confirmPassword) && _password != _confirmPassword)
+                {
+                    <span class="error-text">@MainStrings["PasswordsAreNotEqual"]</span>
+                }
+            </div>
+
+            <button type="submit" class="submit-btn" disabled="@(!IsFormValid)">@MainStrings["RegisterBtn"]</button>
+
+            <div class="card-footer">
+                <span class="footer-text">@MainStrings["RegisterHaveAccount"] <a href="/login"
+                        class="login-link">@MainStrings["LoginSubmit"]</a></span>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code {
+    private string _username = "";
+    private string _email = "";
+    private string _password = "";
+    private string _confirmPassword = "";
+    private bool _showPassword = false;
+    private bool _showConfirmPassword = false;
+    private List<string> _identityErrors = new();
+    private bool _isLengthValid => _password.Length >= 8 && _password.Length <= 16;
+    private bool _hasNumbers => _password.Any(char.IsDigit);
+    private bool _hasLetters => _password.Any(char.IsLetter);
+    private bool _hasSpecial => _password.Any(c => AllowedSpecialChars.Contains(c));
+    private bool _hasUpperCase => _password.Any(char.IsUpper);
+    private bool _hasLowerCase => _password.Any(char.IsLower);
+
+    // Проверка для запрета ввода смайликов и прочего, что может вызвать неправильную обработку строк
+    private static readonly HashSet<char> AllowedSpecialChars =
+    ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '[', ']', '{', '}', ';', ':', '\'', '"', '\\',
+'|', ',', '.', '<', '>', '/', '?'];
+
+    private int StrengthPercent
+    {
+        get
+        {
+            int score = 0;
+            if (_isLengthValid) score++;
+            if (_hasNumbers) score++;
+            if (_hasSpecial) score++;
+            if (_hasLetters) score++;
+            if (_hasUpperCase && _hasLowerCase) score++;
+            return score * 20;
+        }
+    }
+
+    private string StrengthClass => StrengthPercent switch
+    {
+        <= 40 => "weak",
+        <= 80 => "medium",
+        _ => "strong"
+    };
+
+    private bool IsFormValid => _isLengthValid && _hasNumbers && _hasSpecial && _hasLetters && _hasUpperCase &&
+    _hasLowerCase &&
+    _password == _confirmPassword && !string.IsNullOrEmpty(_username) && !string.IsNullOrEmpty(_email);
+
+    private void TogglePasswordVisibility() => _showPassword = !_showPassword;
+    private void ToggleConfirmPasswordVisibility() => _showConfirmPassword = !_showConfirmPassword;
+
+    private void HandlePasswordInput(ChangeEventArgs e)
+    {
+        _password = e.Value?.ToString() ?? "";
+        _identityErrors.Clear();
+    }
+
+    private async Task HandleRegistration()
+    {
+        if (!IsFormValid) return;
+
+        _identityErrors.Clear();
+        Logger.LogInformation("Попытка регистрации пользователя: {Username}", _username);
+
+        var response = await AccountService.RegisterAsync(_username, _email, _password);
+
+        if (response.IsSuccess)
+        {
+
+            Logger.LogInformation("Пользователь {Username} успешно зарегистрирован в системе.", _username);
+            Navigation.NavigateTo(ApiRoutes.Account.LoginEndpoint);
+        }
+        else
+        {
+            _identityErrors = response.Errors!;
+        }
+    }
+}

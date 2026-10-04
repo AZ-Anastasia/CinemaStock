@@ -1,0 +1,18 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using CinemaStock.Shared.Resources.UserErrors
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.JSInterop
+@using CinemaStock.Client
+@using Microsoft.Extensions.Localization
+@using CinemaStock.Shared.Resources.Main
+@using CinemaStock.Shared.Resources.WatchStatus
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IStringLocalizer<MainStrings> MainStrings
+@inject IStringLocalizer<WatchStatusResource> WatchStatus
+@inject IStringLocalizer<UserErrors> UserErrors

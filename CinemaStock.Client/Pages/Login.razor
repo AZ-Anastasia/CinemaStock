@@ -1,0 +1,194 @@
+@page "/login"
+@using CinemaStock.Client.Auth
+@using CinemaStock.Client.Pages.Components
+@using CinemaStock.Shared.ApiEndpointControllers
+@using CinemaStock.Shared.DTOs.Requests
+@using CinemaStock.Shared.Routes
+@using Microsoft.AspNetCore.Authorization
+@using CinemaStock.Client.Services
+@inject HttpClient Http
+@inject IAccountService AccountService
+@inject ILogger<Login> Logger
+@inject JwtAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+@attribute [AllowAnonymous]
+
+<div class="premium-dark-container">
+    <div class="ambient-glow"></div>
+
+    <div class="login-card">
+        <div class="card-header">
+            <h2>@MainStrings["LoginSignIn"]</h2>
+            <p>@MainStrings["LoginDescription"]</p>
+        </div>
+
+        <ErrorBlock ErrorMessages="@_identityErrors" />
+
+        @if (_editContext is not null)
+        {
+            <EditForm EditContext="@_editContext" class="login-form" OnValidSubmit="HandleLoginSubmit">
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="email">@MainStrings["LoginEmail"]</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input class="input-login" type="email" id="email" placeholder="example@gmail.com" required
+                            @bind="_loginModel!.Email" />
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="password">@MainStrings["LoginPassword"]</label>
+                        <a href="/error" class="forgot-link" tabindex="-1">@MainStrings["LoginForgotPassword"]</a>
+                    </div>
+                    <div class="input-wrapper">
+                        <!-- Тип поля меняется динамически в зависимости от состояния showPassword -->
+                        <input type="@(_showPassword ? "text" : "password")" id="password"
+                            placeholder="@MainStrings["LoginPassword"]" required maxlength="16"
+                            value="@_loginModel.Password" @oninput="HandlePasswordInput" />
+
+                        <div class="input-actions-container">
+                            <!-- Иконка знака вопроса с подсказкой -->
+                            <div class="tooltip-container">
+                                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                <div class="tooltip-window">
+                                    <div class="tooltip-title">@MainStrings["PasswordTooltip"]</div>
+                                    <ul>
+                                        <li>@MainStrings["PasswordTooltipLength"]
+                                            <span>@MainStrings["PasswordTooltipLengthExample"]</span>
+                                        </li>
+                                        <li>@MainStrings["PasswordTooltipDigit"]
+                                            <span>@MainStrings["PasswordTooltipDigitExample"]</span>
+                                        </li>
+                                        <li>@MainStrings["PasswordTooltipSpecialSymbol"]
+                                            <span>@MainStrings["PasswordTooltipSpecialSymbolExample"]</span>
+                                        </li>
+                                        <li>@MainStrings["PasswordTooltipLatinLetters"]
+                                            <span>@MainStrings["PasswordTooltipLatinLettersExample"]</span>
+                                        </li>
+                                        <li>@MainStrings["PasswordTooltipUpperLowerCase"]
+                                            <span>@MainStrings["PasswordTooltipUpperLowerCaseExample"]</span>
+                                        </li>
+                                    </ul>
+                                    <div class="tooltip-warning">
+                                        <strong>@MainStrings["PasswordTooltipContainNot"]</strong>
+                                        @MainStrings["PasswordTooltipContainNotExamples"]
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка-иконка показа/скрытия пароля -->
+                            <button type="button" class="icon-btn" @onclick="TogglePasswordVisibility"
+                                aria-label="@MainStrings["PasswordTooltipIconLabel"]">
+                                @if (_showPassword)
+                                {
+                                    <!-- Иконка: Глаз открыт -->
+                                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <!-- Иконка: Глаз перечеркнут -->
+                                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                        </path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">@MainStrings["LoginSubmit"]</button>
+            </EditForm>
+        }
+        else
+        {
+            <div class="auth-loading">@MainStrings["AuthLoading"]</div>
+        }
+        <div class="card-footer">
+            <span class="footer-text">@MainStrings["LoginNewUser"] <a href="/register"
+                    class="register-link">@MainStrings["LoginNewUserCreate"]</a></span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _showPassword = false;
+    private EditContext? _editContext;
+    private List<string> _identityErrors = new();
+    private LoginRequest _loginModel = new()
+    {
+        Email = string.Empty,
+        Password = string.Empty
+    };
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_loginModel!);
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+    }
+
+    private void HandlePasswordInput(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? "";
+
+        // Разрешаем только латиницу, цифры и стандартные спецсимволы (без пробелов и кириллицы)
+        var filtered = System.Text.RegularExpressions.Regex.Replace(
+        input,
+        @"[^a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\/?]",
+        "");
+        if (input.Length != filtered.Length)
+        {
+            var blockedCharactersCount = input.Length - filtered.Length;
+            Logger.LogWarning("Фильтр ввода пароля заблокировал {Count} недопустимых символов.", blockedCharactersCount);
+        }
+        _loginModel!.Password = filtered;
+    }
+
+    private async Task HandleLoginSubmit()
+    {
+        Logger.LogInformation("Инициирован процесс авторизации пользователя: {Email}.", _loginModel!.Email);
+
+        try
+        {
+            var result = await AccountService.LoginAsync(_loginModel.Email, _loginModel.Password);
+
+            if (result.IsSuccess)
+            {
+                Logger.LogInformation("Сессия успешно создана. Обновляем состояние безопасности приложения.");
+
+                if (AuthStateProvider is JwtAuthenticationStateProvider customStateProvider)
+                    customStateProvider.MarkUserAsauthenticated(_loginModel.Email);
+
+                Navigation.NavigateTo(ApiRoutes.Account.ProfileEndpoint);
+            }
+            else
+            {
+                _identityErrors = result.Errors!;
+                foreach (var error in result.Errors!)
+                    Logger.LogWarning("Сбой авторизации: {Error}", error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Критическая ошибка при попытке связаться с сервером авторизации.");
+        }
+    }
+}
