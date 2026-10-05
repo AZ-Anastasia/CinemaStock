@@ -2,7 +2,7 @@
 
 ### 1. Получение списка киноконтента (GET /api/cinema-content/get-cinemas)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor Client as Клиент (UI)
@@ -32,7 +32,7 @@ sequenceDiagram
 
 ### 2. Добавление киноконтента (POST /api/cinema-content/create-cinema)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor Client as Администратор (UI)
@@ -86,7 +86,7 @@ sequenceDiagram
 
 ### 3. Редактирование киноконтента (PUT /api/cinema-content/{id})
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor Client as Администратор (UI)
@@ -145,7 +145,7 @@ sequenceDiagram
 
 ### 4. Удаление киноконтента (DELTE /api/cinema-content/{id})
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor Client as Администратор (UI)

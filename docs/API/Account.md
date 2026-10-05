@@ -2,7 +2,7 @@
 
 ### 1. Получение текущего пользователя (GET /api/account/current)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor UI as Компонент Blazor (Профиль/Шапка)
@@ -29,7 +29,7 @@ sequenceDiagram
 
 ### 2. Авторизация пользователя (POST /api/account/login)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor UI as Форма авторизации (UI)
@@ -61,7 +61,7 @@ sequenceDiagram
 
 ### 3. Регистрация пользователя (POST /api/account/registration)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor UI as Форма регистрации (UI)
@@ -93,7 +93,7 @@ sequenceDiagram
 
 ### 4. Выход из аккаунта (POST /api/account/logout)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor UI as Кнопка выхода (UI)
