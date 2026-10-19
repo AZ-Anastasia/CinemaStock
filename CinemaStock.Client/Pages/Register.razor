@@ -25,14 +25,14 @@
             <div class="input-group">
                 <label for="reg-username">@MainStrings["RegisterUserName"]</label>
                 <div class="input-wrapper">
-                    <input type="text" id="reg-username" placeholder="username" required @bind="_username" />
+                    <input type="text" id="reg-username" placeholder="username" required @bind-value="_username" @bind-value:event="oninput"/>
                 </div>
             </div>
 
             <div class="input-group">
                 <label for="email">@MainStrings["LoginEmail"]</label>
                 <div class="input-wrapper">
-                    <input type="email" id="email" placeholder="example@mail.com" required @bind="_email" />
+                    <input type="email" id="email" placeholder="example@mail.com" required @bind-value="_email" @bind-value:event="oninput"/>
                 </div>
             </div>
 
@@ -40,8 +40,8 @@
                 <label for="reg-password">@MainStrings["LoginPassword"]</label>
                 <div class="input-wrapper">
                     <input type="@(_showPassword ? "text" : "password")" class="has-actions" id="reg-password"
-                        placeholder="@MainStrings["PasswordPlaceholder"]" required maxlength="16" value="@_password"
-                        @oninput="HandlePasswordInput" />
+                        placeholder="@MainStrings["PasswordPlaceholder"]" required maxlength="16" @bind-value="_password"
+                        @bind-value:event="oninput" />
 
                     <div class="input-actions-container">
                         <div class="tooltip-container">
@@ -116,7 +116,8 @@
                 <div class="input-wrapper">
                     <input type="@(_showConfirmPassword ? "text" : "password")" class="has-actions"
                         id="confirm-password" placeholder="@MainStrings["PasswordConfirm"]" required maxlength="16"
-                        @bind="_confirmPassword" />
+                        @bind-value="_confirmPassword" @bind-value:event="oninput"
+                        />
 
                     <div class="input-actions-container">
                         <button type="button" class="icon-btn" tabindex="-1" @onclick="ToggleConfirmPasswordVisibility">

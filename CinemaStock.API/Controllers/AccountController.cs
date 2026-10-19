@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CinemaStock.API.Data.Entities.Base;
+using CinemaStock.Shared.ApiEndpointControllers;
 using CinemaStock.Shared.DTOs.Requests;
 using CinemaStock.Shared.DTOs.Responses;
 using CinemaStock.Shared.Resources.UserErrors;
@@ -39,11 +40,19 @@ public class AccountController : ControllerBase
 
         if (result.Succeeded)
         {
-            return Ok();
+            var userResponse = new UserBaseInfoResponse
+            {
+                Username = newUser.UserName,
+                Email = newUser.Email
+            };
+
+            var successResult = new ResultDto<UserBaseInfoResponse>(true, userResponse, null);
+            return Ok(successResult);
         }
 
         var errorMessages = result.Errors.Select(e => e.Description).ToList();
-        return BadRequest(errorMessages);
+        var errorResult = new ResultDto<UserBaseInfoResponse>(false, null, errorMessages);
+        return BadRequest(errorResult);
     }
 
     [AllowAnonymous]
@@ -53,7 +62,7 @@ public class AccountController : ControllerBase
         var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null)
-            return BadRequest(new[] { UserErrors.BadLoginOrPassword });
+            return BadRequest(new ResultDto<object>(false, null, new() { UserErrors.BadLoginOrPassword }));
 
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: false, lockoutOnFailure: false);
 
@@ -63,20 +72,31 @@ public class AccountController : ControllerBase
             var customClaims = roles.Select(role => new Claim(ClaimTypes.Role, role));
 
             await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, customClaims);
-            
-            return Ok();
+
+            var loginData = new UserInfoResponse
+            {
+                Id = user.Id.ToString(),
+                Username = user.UserName!,
+                Email = user.Email!,
+                Roles = roles.ToList()
+            };
+
+            var successResult = new ResultDto<UserInfoResponse>(true, loginData, null);
+            return Ok(successResult);
         }
 
+        var errors = new List<string>();
+
         if (result.IsLockedOut)
-            return BadRequest(new[] { UserErrors.AccountBlocked });
+            errors.Add(UserErrors.AccountBlocked);
+        else if (result.IsNotAllowed)
+            errors.Add(UserErrors.LoginIsNotAllowed);
+        else if (result.RequiresTwoFactor)
+            errors.Add(UserErrors.TwoFactorAuthRequired);
+        else
+            errors.Add(UserErrors.BadLoginOrPassword);
 
-        if (result.IsNotAllowed)
-            return BadRequest(new[] { UserErrors.LoginIsNotAllowed });
-
-        if (result.RequiresTwoFactor)
-            return BadRequest(new[] { UserErrors.TwoFactorAuthRequired });
-
-        return BadRequest(new[] { UserErrors.BadLoginOrPassword });
+        return BadRequest(new ResultDto<object>(false, null, errors));
     }
 
     [Authorize]

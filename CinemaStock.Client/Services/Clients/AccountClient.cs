@@ -23,41 +23,41 @@ public class AccountClient : ApiHttpClient, IAccountService
         }
     }
 
-    public async Task<ResultDto> LoginAsync(string email, string password)
+    public async Task<ResultDto<UserBaseInfoResponse>> LoginAsync(string email, string password)
     {
         try
         {
             var loginDto = new LoginRequest { Email = email, Password = password };
-            await PostAsync(ApiRoutes.Account.Login, loginDto);
+            var loggedUser = await PostAsync<LoginRequest, UserBaseInfoResponse>(ApiRoutes.Account.Login, loginDto);
 
-            return new ResultDto(true, null);
+            return new ResultDto<UserBaseInfoResponse>(true, loggedUser, null);
         }
         catch (HttpRequestException ex)
         {
-            return new ResultDto(false, new List<string> { ex.Message });
+            return new ResultDto<UserBaseInfoResponse>(false, new List<string> { ex.Message });
         }
         catch (Exception ex)
         {
-            return new ResultDto(false, new List<string> { $"{UserErrors.ServerConnectionFailed}. {ex.Message}" });
+            return new ResultDto<UserBaseInfoResponse>(false, new List<string> { $"{UserErrors.ServerConnectionFailed}. {ex.Message}" });
         }
     }
 
-    public async Task<ResultDto> RegisterAsync(string username, string email, string password)
+    public async Task<ResultDto<UserBaseInfoResponse>> RegisterAsync(string username, string email, string password)
     {
         try
         {
             var dto = new RegisterRequest { Username = username, Email = email, Password = password };
-            await PostAsync(ApiRoutes.Account.Register, dto);
+            var registeredUser = await PostAsync<RegisterRequest,UserBaseInfoResponse>(ApiRoutes.Account.Register, dto);
 
-            return new ResultDto(true, new());
+            return new ResultDto<UserBaseInfoResponse>(true, registeredUser, null);
         }
         catch (HttpRequestException ex)
         {
-            return new ResultDto(false, new List<string> { ex.Message });
+            return new ResultDto<UserBaseInfoResponse>(false, new List<string> { ex.Message });
         }
         catch (Exception ex)
         {
-            return new ResultDto(false, new List<string> { $"{UserErrors.ServerConnectionFailed}. {ex.Message}" });
+            return new ResultDto<UserBaseInfoResponse>(false, new List<string> { $"{UserErrors.ServerConnectionFailed}. {ex.Message}" });
         }
     }
 

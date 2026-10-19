@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using CinemaStock.Shared.ApiEndpointControllers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace CinemaStock.Client.Services.Clients.Base;
@@ -101,8 +102,19 @@ public class ApiHttpClient
     private async Task<T> ProcessResponseAsync<T>(HttpResponseMessage response)
     {
         await CheckResponseAsync(response);
+        
+        var resultDto = await response.Content.ReadFromJsonAsync<ResultDto<T>>();
 
-        return await response.Content.ReadFromJsonAsync<T>()
-            ?? throw new InvalidOperationException("Пустой ответ от сервера.");
+        if (resultDto == null)
+            throw new InvalidOperationException("Не удалось распарсить ответ от сервера.");
+
+        if (!resultDto.IsSuccess)
+        {
+            var errors = resultDto.Errors != null ? string.Join(", ", resultDto.Errors) : "Неизвестная ошибка API";
+            throw new HttpRequestException($"API ошибка: {errors}");
+        }
+
+        return resultDto.Data
+                ?? throw new InvalidOperationException("Пустой ответ от сервера.");
     }
 }

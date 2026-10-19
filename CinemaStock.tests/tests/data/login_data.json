@@ -1,0 +1,34 @@
+[
+    {
+        "scenario_name": "invalid_password",
+        "inputs":{
+            "email":"VALID_EMAIL",
+            "password": "12asdxfc234"
+        },
+        "resx_error_key": "BadLoginOrPassword"
+    },
+    {
+        "scenario_name": "invalid_name",
+        "inputs":{
+            "email":"fake_user@gmail.com",
+            "password": "VALID_PASSWORD"
+        },
+        "resx_error_key": "BadLoginOrPassword"
+    },
+    {
+        "scenario_name": "empty_email_field",
+        "inputs":{
+            "email":"",
+            "password": "VALID_PASSWORD"
+        },
+        "resx_error_key": "BadLoginOrPassword"
+    },
+    {
+        "scenario_name": "empty_password_field",
+        "inputs":{
+            "email":"fake_user@gmail.com",
+            "password": ""
+        },
+        "resx_error_key": "BadLoginOrPassword"
+    }
+]

@@ -1,0 +1,71 @@
+[
+    {
+        "scenario_name": "login_email_and_password_exist",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "VALID_PASSWORD",
+            "confirm_password": "VALID_PASSWORD"
+        },
+        "error": "is already taken"
+    },
+    {
+        "scenario_name": "weak_password",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "123querty!",
+            "confirm_password": "123querty!"
+        },
+        "resx_error_key": "BadLoginOrPassword"
+    },
+    {
+        "scenario_name": "weak_password_api",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "123querty!",
+            "confirm_password": "123querty!"
+        },
+        "errors": "Passwords must have at least one uppercase ('A'-'Z')."
+    },
+    {
+        "scenario_name": "invalid_email_format",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"testuser",
+            "password": "VALID_PASSWORD",
+            "confirm_password": "VALID_PASSWORD"
+        }
+    },
+    {
+        "scenario_name": "password_too_short",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "Aa1!a",
+            "confirm_password": "Aa1!a"
+        },
+        "errors": "Passwords must be at least 8 characters."
+    },
+    {
+        "scenario_name": "password_no_digits",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "Password!",
+            "confirm_password": "Password!"
+        },
+        "errors": "Passwords must have at least one digit ('0'-'9')."
+    },
+    {
+        "scenario_name": "password_doesnt_match",
+        "inputs":{
+            "username": "VALID_LOGIN",
+            "email":"VALID_EMAIL",
+            "password": "Aa1!aaaa",
+            "confirm_password": "Password!"
+        },
+        "errors": "is already taken."
+    }
+]
