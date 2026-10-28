@@ -58,14 +58,14 @@ public class GenreService : IGenreService
 
         var trimmedName = request.Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedName))
-            return null;
+            return new IdNameResponse { Id = Guid.Empty, Name = string.Empty };
 
         var isNameTaken = await _context.Genres.AnyAsync(g =>
             g.Id != id &&
             g.Name.ToLower() == trimmedName.ToLower());
 
         if (isNameTaken)
-            return null;
+            return new IdNameResponse { Id = Guid.Empty, Name = string.Empty };
 
         genre.Name = trimmedName;
 

@@ -71,7 +71,9 @@ public class GenresController : ControllerBase
         {
             var updatedGenre = await _genreService.UpdateGenreAsync(id, request);
             if (updatedGenre == null)
-                return BadRequest(UserErrors.GenreAlreadyExist);
+                return BadRequest(UserErrors.GenreNotFound);
+            if (updatedGenre.Id == Guid.Empty)
+                    return BadRequest(UserErrors.GenreAlreadyExist);
 
             return Ok(updatedGenre);
         }
@@ -91,7 +93,7 @@ public class GenresController : ControllerBase
             var isDeleted = await _genreService.DeleteGenreAsync(id);
 
             if (!isDeleted)
-                return BadRequest(UserErrors.GenreAlreadyExist);
+                return NotFound(UserErrors.GenreNotFound);
 
             return Ok();
         }

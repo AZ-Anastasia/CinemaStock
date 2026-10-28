@@ -73,7 +73,9 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
             throw new Exception(ex.Message);
         }
-
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
+        finally
+        {
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
+        }
     }
 }

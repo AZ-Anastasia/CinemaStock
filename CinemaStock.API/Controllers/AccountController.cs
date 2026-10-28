@@ -62,7 +62,7 @@ public class AccountController : ControllerBase
         var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null)
-            return BadRequest(new ResultDto<object>(false, null, new() { UserErrors.BadLoginOrPassword }));
+            return BadRequest(new ResultDto<UserInfoResponse>(false, null, new() { UserErrors.BadLoginOrPassword }));
 
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: false, lockoutOnFailure: false);
 
@@ -96,7 +96,7 @@ public class AccountController : ControllerBase
         else
             errors.Add(UserErrors.BadLoginOrPassword);
 
-        return BadRequest(new ResultDto<object>(false, null, errors));
+        return BadRequest(new ResultDto<UserInfoResponse>(false, null, errors));
     }
 
     [Authorize]
@@ -118,7 +118,7 @@ public class AccountController : ControllerBase
             if (user == null)
             {
                 _logger.LogWarning("Пользователь из контекста куки не найден в системе.");
-                return Unauthorized();
+                return Unauthorized(new ResultDto<UserInfoResponse>(false, null, new() { "Пользователь не найден." }));
             }
 
             IList<string> roles = new List<string>();
@@ -139,13 +139,13 @@ public class AccountController : ControllerBase
                 Roles = roles.ToList() ?? new List<string>()
             };
 
-            return Ok(response);
+            return Ok(new ResultDto<UserInfoResponse>(true, response, null));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Критический сбой в методе GetCurrentUser.");
 
-            return StatusCode(500, UserErrors.ServerConnectionFailed);
+            return StatusCode(500, new ResultDto<UserInfoResponse>(false, null, new() { UserErrors.ServerConnectionFailed }));
         }
     }
 }

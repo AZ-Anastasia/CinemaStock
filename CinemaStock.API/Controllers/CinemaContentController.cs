@@ -66,7 +66,6 @@ public class CinemaContentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CinemaContentResponse>> CreateCinemaContentAsync([FromForm] CreateCinemaContentRequest request)
-    // public async Task<IActionResult> CreateMediaContent([FromBody] CreateMediaContentRequest request)
     {
         _logger.LogInformation("Получен HTTP POST запрос на создание фильма");
 

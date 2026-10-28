@@ -110,6 +110,7 @@
   <data name="OwnCommentPlaceholder"><value>Your own comments...</value></data>
   <data name="CancelBtn"><value>Cancel</value></data>
   <data name="SaveBtn"><value>Save</value></data>
+  <data name="Logout"><value>Logout</value></data>
 
   <data name="UserRoleAdmin"><value>Administrator</value></data>
   <data name="UserRoleUser"><value>User</value></data>

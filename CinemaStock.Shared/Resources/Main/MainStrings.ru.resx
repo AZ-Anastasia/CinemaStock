@@ -111,6 +111,7 @@
   <data name="OwnCommentPlaceholder"><value>Ваши личные заметки...</value></data>
   <data name="CancelBtn"><value>Отмена</value></data>
   <data name="SaveBtn"><value>Сохранить</value></data>
+  <data name="Logout"><value>Выйти</value></data>
 
   <data name="UserRoleAdmin"><value>Администратор</value></data>
   <data name="UserRoleUser"><value>Пользователь</value></data>

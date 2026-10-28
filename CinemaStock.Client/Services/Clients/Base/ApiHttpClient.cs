@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using CinemaStock.Shared.ApiEndpointControllers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
@@ -98,23 +99,53 @@ public class ApiHttpClient
 
         return response;
     }
-
-    private async Task<T> ProcessResponseAsync<T>(HttpResponseMessage response)
+private async Task<T> ProcessResponseAsync<T>(HttpResponseMessage response)
     {
         await CheckResponseAsync(response);
-        
-        var resultDto = await response.Content.ReadFromJsonAsync<ResultDto<T>>();
 
-        if (resultDto == null)
-            throw new InvalidOperationException("Не удалось распарсить ответ от сервера.");
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var rawContent = await response.Content.ReadAsStringAsync();
 
-        if (!resultDto.IsSuccess)
+        if (string.IsNullOrWhiteSpace(rawContent))
+            throw new InvalidOperationException("Пустой ответ от сервера.");
+
+        try
         {
-            var errors = resultDto.Errors != null ? string.Join(", ", resultDto.Errors) : "Неизвестная ошибка API";
-            throw new HttpRequestException($"API ошибка: {errors}");
+            using var document = JsonDocument.Parse(rawContent);
+            var root = document.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Object && 
+                (root.TryGetProperty("isSuccess", out _) || root.TryGetProperty("IsSuccess", out _)))
+            {
+                var resultDto = JsonSerializer.Deserialize<ResultDto<T>>(rawContent, options);
+
+                if (resultDto == null)
+                    throw new InvalidOperationException("Не удалось распарсить ответ как ResultDto.");
+
+                if (!resultDto.IsSuccess)
+                {
+                    var errors = resultDto.Errors != null ? string.Join(", ", resultDto.Errors) : "Неизвестная ошибка API";
+                    throw new HttpRequestException($"API ошибка: {errors}");
+                }
+
+                return resultDto.Data 
+                        ?? throw new InvalidOperationException("Пустой блок Data в ответе сервера.");
+            }
+        }
+        catch (JsonException)
+        {
+            // Если это даже не JSON — проваливаемся ниже к обработке ошибок или просто упадем на следующем шаге
         }
 
-        return resultDto.Data
-                ?? throw new InvalidOperationException("Пустой ответ от сервера.");
+        // Если это просто JSON (массив фильмов, объект и т.д.) без обертки ResultDto
+        try
+        {
+            var directData = JsonSerializer.Deserialize<T>(rawContent, options);
+            return directData ?? throw new InvalidOperationException("Не удалось десериализовать прямой ответ сервера.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"Ошибка десериализации данных типа {typeof(T).Name}. Детали: {ex.Message}");
+        }
     }
 }

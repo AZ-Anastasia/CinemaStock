@@ -9,7 +9,9 @@
 @using Microsoft.Extensions.Logging
 @inject AuthenticationStateProvider AuthStateProvider
 @inject CinemaContentClient CinemaContentClient
+@inject AccountClient AccountClient
 @inject ILogger<Profile> Logger
+@inject NavigationManager Navigation
 @attribute [Authorize]
 
 <div class="profile-layout-container">
@@ -31,6 +33,9 @@
             </button>
             <button class="menu-item @(currentTab == "library" ? "active" : "")" @onclick='() => ChangeTab("library")'>
                 <i class="icon-film"></i> @MainStrings["MyLibrary"]
+            </button>
+            <button class="menu-item @(currentTab == "logout" ? "active" : "")" @onclick='() => HandleLogout()'>
+                <i class="icon-film"></i> @MainStrings["Logout"]
             </button>
 
             <AuthorizeView Roles="Admin">
@@ -74,8 +79,9 @@
                         <AdminSystemDashboard @ref="_dashboardRef" OnCreateClick="OpenCmsCreateDrawer"
                             OnEditClick="async (item) => OpenCmsEditDrawer(item)"
                             OnDeleteClick="async (id) => await CmsDeleteDrawer(id)" />
-                        <CmsMediaDrawer EditingMediaId="@_editingMediaId" IsOpen="@_isCmsDrawerOpen" IsEditMode="@_isCmsEditMode" RequestModel="@_cmsRequestData"
-                            OnClose="CloseCmsDrawer" OnSaved="RefreshCatalogTable" />
+                        <CmsMediaDrawer EditingMediaId="@_editingMediaId" IsOpen="@_isCmsDrawerOpen"
+                            IsEditMode="@_isCmsEditMode" RequestModel="@_cmsRequestData" OnClose="CloseCmsDrawer"
+                            OnSaved="RefreshCatalogTable" />
                     </Authorized>
                     <NotAuthorized>
                         <p class="error">@MainStrings["AccessDenied"]</p>
@@ -190,5 +196,31 @@
     private void ChangeTab(string tabName)
     {
         currentTab = tabName;
+    }
+
+    private async Task HandleLogout()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var username = authState.User.Identity?.Name ?? "Неизвестный пользователь";
+
+        try
+        {
+            if(AuthStateProvider is JwtAuthenticationStateProvider jwtAuthProvider)
+            {
+                await jwtAuthProvider.MarkUserAsLoggedOutAsync();
+                
+                Logger.LogInformation($"Пользователь '{username}' успешно разлогинен.");
+
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                Logger.LogError("AuthStateProvider не является экземпляром JwtAuthenticationStateProvider");
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"Ошибка при попытке выхода: {ex.Message}");
+        }
     }
 }

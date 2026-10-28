@@ -37,6 +37,7 @@
   <data name="TagsDeletingError"><value>Внутренняя ошибка сервера при удалении тега.</value></data>
   <data name="TagNameRequired"><value>Название тега не может быть пустым.</value></data>
   <data name="TagAlreadyExist"><value>Такой тег уже существует в БД.</value></data>
+  <data name="GenreNotFound"><value>Жанр не найден.</value></data>
 
   <data name="GenreReadingError"><value>Внутренняя ошибка сервера при чтении справочника жанров.</value></data>
   <data name="GenrePostingError"><value>Внутренняя ошибка сервера при создании жанра.</value></data>
