@@ -2,7 +2,7 @@ import json
 import allure
 import httpx
 from typing import TypeVar, Type
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -35,11 +35,14 @@ class AsyncBaseClient:
 
                 if response.text.strip():
                     try:
-                        response_json = response.json()
-                        if response_model:
-                            response.parsed = response_model.model_validate(response_json)
+                        if "application/json" in response.headers.get("content-type", ""):
+                            response_json = response.json()
+                            if response_model:
+                                response.parsed = TypeAdapter(response_model).validate_python(response_json)
+                            else:
+                                response.parsed = response_json
                         else:
-                            response.parsed = response_json
+                            response.parsed = response.text
                     except Exception as parse_error:
                         allure.attach(
                             f"Не удалось распарсить JSON. Ошибка: {str(parse_error)}\nТело: {response.text[:500]}",

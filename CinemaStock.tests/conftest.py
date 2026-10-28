@@ -6,15 +6,18 @@ from pathlib import Path
 import time
 from types import MappingProxyType
 from typing import Type, TypeVar
+import typing
 import allure
 import httpx
-from pydantic import TypeAdapter
+from pydantic import RootModel, TypeAdapter
 import pytest
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import pytest_asyncio
 from api.api_clients.base_client import AsyncBaseClient
 from api.models.base_models import AppBaseModel
+
+from api.models.requests.login_request import LoginRequest
 
 # Загрузка переменных из файла .env в окружение ОС
 load_dotenv()
@@ -255,6 +258,30 @@ def event_loop():
     loop.close()
 
 
+@pytest.fixture(scope="session")
+def _base_url_from_config(request: pytest.FixtureRequest)->str:
+    return request.config.getini("api_url")
+
+
+@pytest.fixture(scope="session")
+def auth_cookies(_base_url_from_config:str, config) ->httpx.Cookies:
+    with httpx.Client(base_url=_base_url_from_config) as client:
+        payload = LoginRequest(
+            email=config.user_email, 
+            password=config.user_password
+        )
+        
+        try:
+            login_response = client.post(
+                "api/account/login",
+                json=payload.model_dump(by_alias=True),
+            )
+            login_response.raise_for_status()
+            return client.cookies
+        except httpx.HTTPStatusError as exc:
+            pytest.fail(f"Ошибка сети при попытке авторизации: {exc}")
+
+
 # Обертка для клиента
 @pytest_asyncio.fixture(scope="function", loop_scope="function")
 async def httpx_client():
@@ -268,13 +295,20 @@ async def httpx_client():
 
 
 @pytest.fixture(scope="function")
-def api_client_factory(httpx_client: httpx.AsyncClient, request: pytest.FixtureRequest):
-    backend_url = request.config.getini("api_url")
+def api_client_factory(
+    httpx_client: httpx.AsyncClient,
+    auth_cookies:httpx.Cookies,
+    _base_url_from_config: str
+):
+    class ClientFactory:
+        def __call__(self, client_class:Type[T])-> T:
+            return client_class(client=httpx_client, base_url=_base_url_from_config)
 
-    def _create_client(client_class: Type[T]) -> T:
-        return client_class(client=httpx_client, base_url=backend_url)
+        def authorized(self, client_class: Type[T]) -> T:
+            httpx_client.cookies.update(auth_cookies)
+            return client_class(client=httpx_client, base_url=_base_url_from_config)
 
-    return _create_client
+    return ClientFactory()
 
 
 async def log_request(request: httpx.Request) -> None:
@@ -304,24 +338,45 @@ async def log_response(response: httpx.Response) -> None:
 
 # Парсинг данных в модель, чтобы обращаться через поля класса
 @allure.step("Парсинг данных в модель: {model_class}")
-def parse_to(self: httpx.Response, model_class:Type[M]) -> M | list[str]:
+def parse_to(self: httpx.Response, model_class:typing.Any) -> typing.Any:
         if not self.text or self.text.strip()=="":
-            empty_model = model_class.model_validate({})
+            if model_class is bool:
+                empty_model = self.is_success
+            elif model_class in (int, str):
+                empty_model = model_class()
+            else:
+                empty_model = TypeAdapter(model_class).validate_python({})
             allure.attach(
-                empty_model.model_dump_json(indent=4),
+                empty_model.model_dump_json(indent=4) if hasattr(empty_model, 'model_dump_json') else str(empty_model),
                 name="Результат парсинга (Пустой DTO)",
                 attachment_type=allure.attachment_type.JSON
             )
             return empty_model
         
         if self.text.strip().startswith("["):
-            parsed_list = TypeAdapter(list[str]).validate_json(self.text)
-            allure.attach(
-                json.dumps(parsed_list,indent=4, ensure_ascii=False),
-                name="Результат парсинга (Список ошибок)",
-                attachment_type=allure.attachment_type.JSON
+            is_expected_list = (
+                typing.get_origin(model_class) is list or
+                (isinstance(model_class, type) and issubclass(model_class, RootModel))
             )
-            return parsed_list
+
+            if is_expected_list:
+                parsed_data = TypeAdapter(model_class).validate_json(self.text)
+
+                log_content = parsed_data.model_dump_json(indent=4, by_alias=True) if hasattr(parsed_data, 'model_dump_json') else json.dumps(self.text, indent=4, ensure_ascii=False)
+                allure.attach(
+                    log_content,
+                    name="Результат парсинга (Список ошибок)",
+                    attachment_type=allure.attachment_type.JSON
+                )
+                return parsed_data
+            else:
+                parsed_list = TypeAdapter(list[str]).validate_json(self.text)
+                allure.attach(
+                    json.dumps(parsed_list,indent=4, ensure_ascii=False),
+                    name="Результат парсинга (Список ошибок)",
+                    attachment_type=allure.attachment_type.JSON
+                )
+                return parsed_list
         
         parsed_model = TypeAdapter(model_class).validate_json(self.text)
         allure.attach(

@@ -11,8 +11,11 @@ public static class ClientRegistrationExtensions
     {
         return services.AddScoped(sp =>
         {
+            var cookieHandler = sp.GetRequiredService<CookieHandler>();
+            cookieHandler.InnerHandler = new HttpClientHandler();
+
             var credentialsHandler = new CredentialsHandler();
-            credentialsHandler.InnerHandler = new HttpClientHandler();
+            credentialsHandler.InnerHandler = cookieHandler;
 
             var http = new HttpClient(credentialsHandler)
             {

@@ -9,6 +9,49 @@ from api.models.result_dto import ResultDto
 from assertions.api_verify import APIVerify
 
 
+@allure.epic("Информация о пользователе")
+@allure.feature("API информация о пользователе")
+@pytest.mark.api
+class TestAccountInfoAPI:
+    @allure.id("022")
+    @allure.tag("API")
+    @allure.story("Получение информации о пользователе")
+    @allure.title("Получение текущего пользователя")
+    @pytest.mark.smoke
+    @pytest.mark.regress
+    @pytest.mark.asyncio
+    async def test_get_current_user(self, config, api_client_factory):
+        client = api_client_factory(AccountClient)
+
+        payload = LoginRequest(
+            email=config.user_email, 
+            password=config.user_password
+        )
+
+        response = await client.login(payload)
+        assert response.status_code==200
+        
+        dto = response.parse_to(ResultDto[UserInfoResponse])
+        assert dto.is_success is True
+        assert (
+            dto.errors is None
+        ), "При успешном запросе список ошибок должен быть пуст"
+        assert dto.data.email == payload.email
+        assert "Admin" in dto.data.roles
+
+        response_user = await client.get_current_user()
+        assert response_user.status_code==200
+
+        user = response_user.parse_to(ResultDto[UserInfoResponse])
+        assert user.data.email == payload.email
+
+        response_logout = await client.logout()
+        assert response_logout.status_code==200
+        
+        result = response_logout.parse_to(bool)
+        assert result is True
+
+
 @allure.epic("Регистрация")
 @allure.feature("API регистрации")
 @pytest.mark.api
@@ -42,7 +85,6 @@ class TestAccountRegisterAPI:
         ), "При успешном запросе список ошибок должен быть пуст"
         assert dto.data.username == payload.username
         assert dto.data.email == payload.email
-
 
     @allure.id("012")
     @allure.tag("API")
@@ -264,3 +306,48 @@ class TestAccountLoginAPI:
         
         dto = response.parse_to(ResultDto[UserBaseInfoResponse])
         APIVerify(dto).errors_contain(expected_errors)
+
+
+    @allure.id("020")
+    @allure.tag("API")
+    @allure.story("Успешный выход")
+    @allure.title("Попытка выхода с авторизированным пользователем")
+    @pytest.mark.regress
+    @pytest.mark.asyncio
+    async def test_authorized_logout(self, config, api_client_factory):
+        client = api_client_factory(AccountClient)
+
+        payload = LoginRequest(
+            email=config.user_email, 
+            password=config.user_password
+        )
+
+        response = await client.login(payload)
+        assert response.status_code==200
+        
+        dto = response.parse_to(ResultDto[UserInfoResponse])
+        assert dto.is_success is True
+        assert (
+            dto.errors is None
+        ), "При успешном запросе список ошибок должен быть пуст"
+        assert dto.data.email == payload.email
+        assert "Admin" in dto.data.roles
+
+        response_logout = await client.logout()
+        assert response_logout.status_code==200
+        
+        result = response_logout.parse_to(bool)
+        assert result is True
+
+
+    @allure.id("021")
+    @allure.tag("API")
+    @allure.story("Неуспешный выход")
+    @allure.title("Попытка выхода с неавторизированным пользователем")
+    @pytest.mark.regress
+    @pytest.mark.asyncio
+    async def test_unauthorized_logout(self, api_client_factory):
+        client = api_client_factory(AccountClient)
+
+        response_logout = await client.logout()
+        assert response_logout.status_code==401

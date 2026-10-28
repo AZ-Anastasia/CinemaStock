@@ -25,6 +25,7 @@ public class UserErrors : BaseResource
     public static string GenreDeletingError => GetValue("GenreDeletingError");
     public static string GenreNameRequired => GetValue("GenreNameRequired");
     public static string GenreAlreadyExist => GetValue("GenreAlreadyExist");
+    public static string GenreNotFound => GetValue("GenreNotFound");
 
     public static string ReadingError => GetValue("ReadingError");
     public static string UpdatingError => GetValue("UpdatingError");

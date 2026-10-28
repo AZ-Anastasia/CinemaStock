@@ -44,6 +44,7 @@
   <data name="GenreDeletingError"><value>Server error while deleting genre.</value></data>
   <data name="GenreNameRequired"><value>Genre name cannot be empty.</value></data>
   <data name="GenreAlreadyExist"><value>Genre name already exists in DB.</value></data>
+  <data name="GenreNotFound"><value>Genre was not found.</value></data>
 
   <data name="ReadingError"><value>Server error while reading data.</value></data>
   <data name="UpdatingError"><value>Server error while updating data.</value></data>

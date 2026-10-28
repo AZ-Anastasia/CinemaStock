@@ -47,7 +47,7 @@ public class AccountClient : ApiHttpClient, IAccountService
         try
         {
             var dto = new RegisterRequest { Username = username, Email = email, Password = password };
-            var registeredUser = await PostAsync<RegisterRequest,UserBaseInfoResponse>(ApiRoutes.Account.Register, dto);
+            var registeredUser = await PostAsync<RegisterRequest, UserBaseInfoResponse>(ApiRoutes.Account.Register, dto);
 
             return new ResultDto<UserBaseInfoResponse>(true, registeredUser, null);
         }
@@ -61,8 +61,16 @@ public class AccountClient : ApiHttpClient, IAccountService
         }
     }
 
-    public async Task LogoutAsync()
+    public async Task<bool> LogoutAsync()
     {
-        await PostAsync(ApiRoutes.Account.LogoutEndpoint);
+        try
+        {
+            await PostAsync<object, bool>(ApiRoutes.Account.UserLogout, null);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

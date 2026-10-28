@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace CinemaStock.Shared.ApiEndpointControllers;
 
 public record ResultDto<T>
