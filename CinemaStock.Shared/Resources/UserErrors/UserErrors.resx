@@ -37,6 +37,7 @@
   <data name="TagsDeletingError"><value>Server error while deleting tag.</value></data>
   <data name="TagNameRequired"><value>Tag name cannot be empty.</value></data>
   <data name="TagAlreadyExist"><value>Tag name already exists in DB.</value></data>
+  <data name="TagNotFound"><value>Tag was not found.</value></data>
 
   <data name="GenreReadingError"><value>Server error while reading genres.</value></data>
   <data name="GenrePostingError"><value>Server error while creating a genre.</value></data>

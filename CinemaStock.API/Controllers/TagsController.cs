@@ -68,11 +68,12 @@ public class TagsController : ControllerBase
         }
         try
         {
-            var updatedGenre = await _tagService.UpdateTagAsync(id, request);
-            if (updatedGenre == null)
+            var updatedTag = await _tagService.UpdateTagAsync(id, request);
+            if (updatedTag == null)
+                return BadRequest(UserErrors.TagNotFound);
+            if (updatedTag.Id == Guid.Empty)
                 return BadRequest(UserErrors.TagAlreadyExist);
-
-            return Ok(updatedGenre);
+            return Ok(updatedTag);
         }
         catch (Exception ex)
         {
@@ -90,7 +91,7 @@ public class TagsController : ControllerBase
             var isDeleted = await _tagService.DeleteTagAsync(id);
 
             if (!isDeleted)
-            return BadRequest(UserErrors.TagNameRequired);
+                return NotFound(UserErrors.TagNotFound);
 
             return Ok();
         }

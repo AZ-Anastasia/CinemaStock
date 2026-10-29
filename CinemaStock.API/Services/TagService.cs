@@ -58,14 +58,14 @@ public class TagService : ITagService
 
         var trimmedName = request.Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedName))
-            return null;
+            return new IdNameResponse { Id = Guid.Empty, Name = string.Empty };
 
         var isNameTaken = await _context.Tags.AnyAsync(t =>
             t.Id != id &&
             t.Name.ToLower() == trimmedName.ToLower());
 
         if (isNameTaken)
-            return null;
+            return new IdNameResponse { Id = Guid.Empty, Name = string.Empty };
 
         tag.Name = trimmedName;
 
