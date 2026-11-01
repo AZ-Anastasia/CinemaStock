@@ -18,6 +18,7 @@ public class UserErrors : BaseResource
     public static string TagsDeletingError => GetValue("TagsDeletingError");
     public static string TagNameRequired => GetValue("TagNameRequired");
     public static string TagAlreadyExist => GetValue("TagAlreadyExist");
+    public static string TagNotFound => GetValue("TagNotFound");
 
     public static string GenreReadingError => GetValue("GenreReadingError");
     public static string GenrePostingError => GetValue("GenrePostingError");
